@@ -133,6 +133,15 @@ For every milestone, measure and report:
 | **Cost per Query**         | API cost (embed + LLM + reranker) per question   | Tracked        |
 | **Cache Hit Rate**         | % queries served from cache vs. fresh            | Tracked        |
 
+### UX & Usability Metrics
+| Metric                     | Definition                                       | Target         |
+|----------------------------|--------------------------------------------------|----------------|
+| **Feedback Rate**          | % answers receiving thumbs up/down               | Tracked        |
+| **Thumbs Up Ratio**        | % of feedback that is positive                   | ≥80%           |
+| **Autocomplete Usage**     | % queries triggered from suggestion vs. typed    | Tracked        |
+| **Bookmark Rate**          | % answers bookmarked by users                    | Tracked        |
+| **Session Return Rate**    | % users resuming a previous chat session         | Tracked        |
+
 All metrics are logged per milestone in `benchmarks/<milestone>/` for comparison.
 
 ## 10. Milestones (Testable Strategies)
@@ -152,7 +161,13 @@ Each milestone locks all knobs except the one being tested. Results from all pri
 | **M8**    | Top-k sweep (3, 5, 10, 20, 30) with best config                    | Optimal retrieval depth               |
 | **M9**    | Caching: embedding cache + LLM response cache enabled               | Cache impact on latency/cost          |
 | **M10**   | Best config assembled into final RAG pipeline + GPT-4o             | Crown-jewel comparison vs. M0 and M1  |
-| **M11**   | Web chat UI integration + guardrails + disclaimer                   | Frontend + safety + E2E               |
+| **M11**   | Web chat UI basics (input, response, markdown render, disclaimer)  | Frontend skeleton + safety + E2E      |
+| **M12**   | Chat history persistence (localStorage / backend DB)               | Session management, resume, navigate  |
+| **M13**   | Bookmarked answers (save/unsave Q&A pairs)                         | Persistent bookmarking for revisit    |
+| **M14**   | Starter suggestions + autocomplete suggestions                      | Discovery + input quality             |
+| **M15**   | User feedback (thumbs up/down + reason prompt)                     | Feedback loop for eval improvement    |
+| **M16**   | Streaming responses (SSE token-by-token)                           | Perceived latency, abort mid-stream   |
+| **M17**   | Share & export (copy, shareable link, PDF export)                  | Utility for sharing with family/agent |
 
 ### Milestone Artifacts
 Each milestone directory (`benchmarks/Mx/`) contains:
@@ -195,5 +210,6 @@ Each milestone directory (`benchmarks/Mx/`) contains:
 - **Re-ranking ensembles** — cascade multiple rerankers.
 - **SLM distillation** — replace GPT-4 with a distilled model to reduce cost.
 - **Online A/B testing** — compare strategies on real user queries.
-- **Active learning** — improve eval set from user feedback (thumbs up/down).
 - **Multi-language support** — Hindi, other Indian languages for broader accessibility.
+- **Citation highlight in PDF viewer** — click a citation to open the PDF scrolled to the exact paragraph.
+- **Voice input** — speech-to-text for mobile/accessibility.
