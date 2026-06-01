@@ -10,10 +10,12 @@ from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.vector_stores.chroma import ChromaVectorStore
 
 from src.config import PipelineConfig
-from src.pipeline import Chunker, Embedder, Generator, Parser, QueryRewriter, Reranker, Retriever
+from src.pipeline import Chunker, Embedder, Generator, Parser, Retriever
 from src.pipeline.chunker import RecursiveChunker
 from src.pipeline.embedder import BgeEmbedder
+from src.pipeline.generator import OpenAIGenerator
 from src.pipeline.parser import PyMuPDFParser
+from src.pipeline.retriever import IndexRetriever
 
 # BGE-large-en-v1.5 (1024-dim, English)
 _BGE_MODEL = "BAAI/bge-large-en-v1.5"
@@ -63,17 +65,13 @@ def build_index(config: PipelineConfig) -> VectorStoreIndex:
     )
 
 
-def build_retriever(config: PipelineConfig) -> Retriever:
-    raise NotImplementedError
-
-
-def build_reranker(config: PipelineConfig) -> Reranker:
-    raise NotImplementedError
-
-
-def build_rewriter(config: PipelineConfig) -> QueryRewriter:
-    raise NotImplementedError
-
-
 def build_generator(config: PipelineConfig) -> Generator:
-    raise NotImplementedError
+    return OpenAIGenerator(
+        model=config.llm.model,
+        temperature=config.llm.temperature,
+        max_tokens=config.llm.max_tokens,
+    )
+
+
+def build_retriever(index: VectorStoreIndex, top_k: int) -> Retriever:
+    return IndexRetriever(index=index, top_k=top_k)
