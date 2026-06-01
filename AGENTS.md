@@ -7,8 +7,9 @@ Insurance Policy QnA Bot — retrieval strategy benchmark. A RAG pipeline that a
 
 | Document          | Path           | When to Read                          |
 |-------------------|----------------|---------------------------------------|
-| PRD               | `docs/PRD.md`  | Understanding goals, architecture, milestones, metrics, and tool choices |
-| (future) ADR      | `docs/adr/`    | Architecture Decision Records         |
+| PRD               | `docs/PRD.md`   | Understanding goals, architecture, milestones, metrics, and tool choices |
+| Infrastructure    | `docs/infra.md` | Infrastructure plan, service map, costs, scaling |
+| (future) ADR      | `docs/adr/`     | Architecture Decision Records         |
 | (future) Context  | `docs/CONTEXT.md` | Domain model, ubiquitous language |
 
 ## Repository Layout

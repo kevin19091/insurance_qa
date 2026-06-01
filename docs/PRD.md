@@ -54,7 +54,7 @@ Customers of Max Life Insurance need quick answers about their Group Credit Life
 | Choice           | Why This Over Alternatives                                                                 |
 |------------------|-------------------------------------------------------------------------------------------|
 | **LlamaIndex** over LangChain | Purpose-built for document QnA. Clean `IngestionPipeline` → `VectorStoreIndex` → `QueryEngine` separation. Chunking/retrieval strategy swapping is a one-liner config change. LangChain requires more glue code for the same modularity. |
-| **Unstructured** over PyMuPDF | Insurance PDFs are table-heavy. Unstructured preserves table structure and metadata boundaries. PyMuPDF is faster but loses table semantics. |
+| **PyMuPDF** over Unstructured | Unstructured preserves table structure better for complex layouts, but has a macOS build issue (llvmlite). PyMuPDF works everywhere and is fast. Table-aware chunking can compensate. |
 | **BGE-large-en** as primary embedding | Open source (MIT), top MTEB scores, zero API cost — more experiments possible. OpenAI/Cohere as baseline comparisons. |
 | **Chroma** → **Qdrant**  | Chroma for M1–M5 (simple, local-first). Switch to Qdrant at M7 when hybrid retrieval needs native dense+sparse fusion. |
 | **RAGAS** over DeepEval | Purpose-built for RAG metrics (faithfulness, context precision/recall, answer relevancy). DeepEval is a broader eval framework less optimized for retrieval evaluation. |

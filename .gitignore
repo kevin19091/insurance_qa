@@ -1,5 +1,6 @@
 # Data files (insurance PDFs)
-data/
+data/*
+!data/eval/
 
 # Secrets
 .env
