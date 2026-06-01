@@ -22,9 +22,10 @@ dependencies = [
     "pyyaml>=6",
     "langfuse>=2",
     "ragas>=0.2",
-    "sentence-transformers>=3",
+    "sentence-transformers<5",
+    "numpy<2",
+    "torch>=2.2,<2.3",
     "pymupdf>=1.25",
-    # "unstructured>=0.16" — blocked by llvmlite build issue on macOS. Use pymupdf instead.
     "cohere>=5",
     "sse-starlette>=2",
 ]

@@ -6,7 +6,7 @@ Each component has a base protocol/ABC so strategies are swappable via config.
 from abc import ABC, abstractmethod
 from collections.abc import AsyncGenerator
 
-from llama_index.core.schema import Document, NodeWithScore, QueryBundle
+from llama_index.core.schema import Document, NodeWithScore, QueryBundle, TextNode
 
 
 class Parser(ABC):
@@ -20,14 +20,14 @@ class Chunker(ABC):
     """Split Documents into Nodes (chunks)."""
 
     @abstractmethod
-    def chunk(self, documents: list[Document]) -> list[Document]: ...
+    def chunk(self, documents: list[Document]) -> list[TextNode]: ...
 
 
 class Embedder(ABC):
     """Embed text into vectors. Wraps an embedding model."""
 
     @abstractmethod
-    def embed(self, nodes: list[Document]) -> list[Document]: ...
+    def embed(self, nodes: list[TextNode]) -> list[TextNode]: ...
 
 
 class Retriever(ABC):

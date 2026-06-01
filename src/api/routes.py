@@ -1,12 +1,14 @@
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Query, Request
 from fastapi.responses import PlainTextResponse
 
 router = APIRouter(prefix="/api")
 
 
 @router.get("/health")
-async def health() -> dict[str, str]:
-    return {"status": "ok"}
+async def health(request: Request) -> dict[str, str | int]:
+    index = getattr(request.app.state, "index", None)
+    node_count = len(index.index_struct.nodes_dict) if index else 0
+    return {"status": "ok", "node_count": node_count}
 
 
 @router.get("/chat/stream")
