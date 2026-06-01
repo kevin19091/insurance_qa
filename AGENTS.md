@@ -9,8 +9,9 @@ Insurance Policy QnA Bot — retrieval strategy benchmark. A RAG pipeline that a
 |-------------------|----------------|---------------------------------------|
 | PRD               | `docs/PRD.md`   | Understanding goals, architecture, milestones, metrics, and tool choices |
 | Infrastructure    | `docs/infra.md` | Infrastructure plan, service map, costs, scaling |
-| (future) ADR      | `docs/adr/`     | Architecture Decision Records         |
-| (future) Context  | `docs/CONTEXT.md` | Domain model, ubiquitous language |
+| Architecture      | `docs/ARCHITECTURE.md` | Component diagrams, data flow, config-driven pipeline, request lifecycle |
+| ADR               | `docs/adr/`     | Architecture Decision Records (why LlamaIndex, why SSE, why PyMuPDF) |
+| Context           | `docs/CONTEXT.md` | Domain model, ubiquitous language, term glossary |
 
 ## Repository Layout
 
