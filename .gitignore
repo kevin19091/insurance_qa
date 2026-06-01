@@ -1,0 +1,41 @@
+# Data files (insurance PDFs)
+data/
+
+# Secrets
+.env
+.env.*
+*.key
+*.pem
+credentials.json
+service-account.json
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+.venv/
+venv/
+*.egg
+
+# Node / React
+node_modules/
+frontend/build/
+frontend/dist/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Docker
+.docker/
+
+# Logs
+*.log
+
+# Misc
+*.tmp
+.cache/
