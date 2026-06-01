@@ -12,6 +12,7 @@ Insurance Policy QnA Bot — retrieval strategy benchmark. A RAG pipeline that a
 | Architecture      | `docs/ARCHITECTURE.md` | Component diagrams, data flow, config-driven pipeline, request lifecycle |
 | ADR               | `docs/adr/`     | Architecture Decision Records (why LlamaIndex, why SSE, why PyMuPDF) |
 | Context           | `docs/CONTEXT.md` | Domain model, ubiquitous language, term glossary |
+| Issues            | `docs/ISSUES.md` | Implementation plan — vertical slices in dependency order |
 
 ## Repository Layout
 
@@ -34,6 +35,7 @@ frontend/       React web chat UI
 ## Quick Links for Agents
 
 - **Want to understand what to build?** → `docs/PRD.md`
+- **Want to see implementation order?** → `docs/ISSUES.md`
 - **Want to run a milestone?** → `docs/PRD.md` §10, pick a milestone, create `benchmarks/Mx/config.yaml`
 - **Want to add a new retrieval strategy?** → Implement the retriever interface, register it in the pipeline factory, create a new config YAML
 - **Want to evaluate?** → Run against `data/eval/` golden QA pairs using RAGAS metrics
