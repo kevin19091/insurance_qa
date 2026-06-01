@@ -6,10 +6,11 @@ Swapping strategies = changing the config → factory returns a different implem
 
 from src.config import PipelineConfig
 from src.pipeline import Chunker, Embedder, Generator, Parser, QueryRewriter, Reranker, Retriever
+from src.pipeline.parser import PyMuPDFParser
 
 
 def build_parser(config: PipelineConfig) -> Parser:
-    raise NotImplementedError
+    return PyMuPDFParser()
 
 
 def build_chunker(config: PipelineConfig) -> Chunker:

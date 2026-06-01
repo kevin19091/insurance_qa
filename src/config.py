@@ -3,8 +3,10 @@
 One Pydantic model maps 1:1 to config.yaml.
 """
 
+from pathlib import Path
 from typing import Literal
 
+import yaml
 from pydantic import BaseModel
 
 
@@ -64,3 +66,8 @@ class PipelineConfig(BaseModel):
     cache: CacheConfig = CacheConfig()
     seed: int = 42
     prompt_version: str = "v1"
+
+    @classmethod
+    def from_yaml(cls, path: Path) -> "PipelineConfig":
+        raw = yaml.safe_load(path.read_text())
+        return cls(**raw)
