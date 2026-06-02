@@ -12,7 +12,7 @@ embedding:
 
 retrieval:
   mode: "dense"
-  top_k: 5
+  top_k: 0
 
 reranker:
   enabled: false

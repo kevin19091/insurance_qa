@@ -15,7 +15,7 @@ from src.pipeline.chunker import RecursiveChunker
 from src.pipeline.embedder import BgeEmbedder
 from src.pipeline.generator import OpenAIGenerator
 from src.pipeline.parser import PyMuPDFParser
-from src.pipeline.retriever import IndexRetriever
+from src.pipeline.retriever import IndexRetriever, NullRetriever
 
 # BGE-large-en-v1.5 (1024-dim, English)
 _BGE_MODEL = "BAAI/bge-large-en-v1.5"
@@ -74,4 +74,6 @@ def build_generator(config: PipelineConfig) -> Generator:
 
 
 def build_retriever(index: VectorStoreIndex, top_k: int) -> Retriever:
+    if top_k == 0:
+        return NullRetriever()
     return IndexRetriever(index=index, top_k=top_k)

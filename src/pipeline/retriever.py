@@ -14,3 +14,11 @@ class IndexRetriever(RetrieverABC):
     @observe(as_type="retriever")
     def retrieve(self, query: QueryBundle) -> list[NodeWithScore]:
         return self._retriever.retrieve(query)
+
+
+class NullRetriever(RetrieverABC):
+    def retrieve(self, query: QueryBundle) -> list[NodeWithScore]:
+        return []
+
+
+__all__ = ["IndexRetriever", "NullRetriever"]

@@ -12,7 +12,7 @@ import sys
 from pathlib import Path
 from typing import Any, cast
 
-from datasets import Dataset
+from datasets import Dataset, Sequence, Value
 from dotenv import load_dotenv
 from llama_index.core.schema import QueryBundle, TextNode
 from ragas import evaluate
@@ -75,10 +75,11 @@ def run_eval(
         {
             "question": questions,
             "answer": answers,
-            "contexts": contexts,
+            "contexts": [list(c) for c in contexts],
             "ground_truth": ground_truths,
         }
     )
+    dataset = dataset.cast_column("contexts", Sequence(Value("string")))
 
     result = evaluate(
         dataset,

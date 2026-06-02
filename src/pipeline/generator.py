@@ -12,6 +12,23 @@ from src.pipeline import Generator as GeneratorABC
 
 
 def _build_prompt(query: str, context_nodes: list[NodeWithScore]) -> list[ChatMessage]:
+    if not context_nodes:
+        return [
+            ChatMessage(
+                role=MessageRole.SYSTEM,
+                content=(
+                    "You are an AI assistant for Max Life Insurance. "
+                    "Answer the question based on your knowledge. "
+                    "This response is AI-generated and does not constitute "
+                    "legal or insurance advice."
+                ),
+            ),
+            ChatMessage(
+                role=MessageRole.USER,
+                content=f"Question: {query}",
+            ),
+        ]
+
     context_lines: list[str] = []
     for n in context_nodes:
         node = cast(TextNode, n.node)
