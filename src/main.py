@@ -1,3 +1,5 @@
+"""FastAPI application entry point."""
+
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -16,6 +18,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
     config = PipelineConfig.from_yaml(Path("benchmarks/M0/config.yaml"))
     app.state.config = config
     app.state.index = build_index(config)
+    app.state.cancel_events = []
     yield
 
 

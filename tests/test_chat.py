@@ -1,5 +1,6 @@
 """Tests for retrieval and generation pipeline."""
 
+import json
 import os
 
 import pytest
@@ -56,3 +57,46 @@ class TestChatEndpoint:
             assert len(data["answer"]) > 20
             assert "premium" in data["answer"].lower()
             assert len(data.get("sources", [])) > 0
+
+    def test_stream_returns_sse_events(self) -> None:
+        from fastapi.testclient import TestClient
+
+        from src.main import app
+
+        with (
+            TestClient(app) as client,
+            client.stream("GET", "/api/chat/stream", params={"q": "What is the premium?"}) as resp,
+        ):
+            assert resp.status_code == 200
+            assert resp.headers["content-type"] == "text/event-stream; charset=utf-8"
+
+            events: list[dict[str, str]] = []
+            for line in resp.iter_lines():
+                if not line:
+                    continue
+                if line.startswith("event: "):
+                    events.append({"event": line[7:], "data": ""})
+                elif line.startswith("data: ") and events:
+                    events[-1]["data"] = line[6:]
+
+            assert len(events) >= 3
+            assert events[0]["event"] == "sources"
+            sources = json.loads(events[0]["data"])["sources"]
+            assert len(sources) > 0
+
+            tokens = [e for e in events if e["event"] == "token"]
+            assert len(tokens) > 0
+            full_text = "".join(json.loads(e["data"])["token"] for e in tokens)
+            assert len(full_text) > 20
+
+            assert events[-1]["event"] == "done"
+
+    def test_abort_returns_ok(self) -> None:
+        from fastapi.testclient import TestClient
+
+        from src.main import app
+
+        with TestClient(app) as client:
+            resp = client.post("/api/chat/abort")
+            assert resp.status_code == 200
+            assert resp.json() == {"status": "aborted"}
