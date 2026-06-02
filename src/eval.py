@@ -34,13 +34,19 @@ def load_qa_pairs(path: Path) -> list[dict[str, Any]]:
         return cast(list[dict[str, Any]], json.load(f))
 
 
-def run_eval(config_path: Path, output_path: Path | None = None) -> dict[str, Any]:
+def run_eval(
+    config_path: Path,
+    output_path: Path | None = None,
+    generator: Any = None,
+    retriever: Any = None,
+) -> dict[str, Any]:
     config = PipelineConfig.from_yaml(config_path)
 
-    print("Building index...")
-    index = build_index(config)
-    retriever = build_retriever(index, config.retrieval.top_k)
-    generator = build_generator(config)
+    if retriever is None or generator is None:
+        print("Building index...")
+        index = build_index(config)
+        retriever = build_retriever(index, config.retrieval.top_k)
+        generator = build_generator(config)
 
     qa_pairs = load_qa_pairs(Path("data/eval/qa.json"))
     print(f"Evaluating {len(qa_pairs)} QA pairs...")

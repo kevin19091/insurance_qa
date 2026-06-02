@@ -38,11 +38,27 @@ def _build_prompt(query: str, context_nodes: list[NodeWithScore]) -> list[ChatMe
 class OpenAIGenerator(GeneratorABC):
     def __init__(self, model: str, temperature: float, max_tokens: int) -> None:
         self._llm = OpenAI(model=model, temperature=temperature, max_tokens=max_tokens)
+        self._total_prompt_tokens = 0
+        self._total_completion_tokens = 0
+
+    @property
+    def usage(self) -> dict[str, int]:
+        return {
+            "prompt_tokens": self._total_prompt_tokens,
+            "completion_tokens": self._total_completion_tokens,
+            "total_tokens": self._total_prompt_tokens + self._total_completion_tokens,
+        }
 
     def generate(self, query: str, context_nodes: list[NodeWithScore]) -> str:
         messages = _build_prompt(query, context_nodes)
         response = self._llm.chat(messages)
+        self._track_usage(response)
         return response.message.content or ""
+
+    def _track_usage(self, response: object) -> None:
+        usage = getattr(response, "additional_kwargs", {})
+        self._total_prompt_tokens += usage.get("prompt_tokens", 0)
+        self._total_completion_tokens += usage.get("completion_tokens", 0)
 
     async def stream(  # type: ignore[override]
         self, query: str, context_nodes: list[NodeWithScore]
