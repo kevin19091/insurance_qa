@@ -4,6 +4,7 @@ from llama_index.core.base.embeddings.base import BaseEmbedding
 from llama_index.core.schema import TextNode
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 
+from src.observability import observe
 from src.pipeline import Embedder as EmbedderABC
 
 
@@ -15,6 +16,7 @@ class BgeEmbedder(EmbedderABC):
         )
         self._dimension = dimension
 
+    @observe(as_type="embedding")
     def embed(self, nodes: list[TextNode]) -> list[TextNode]:
         texts = [n.text for n in nodes]
         embeddings = self._model.get_text_embedding_batch(texts)

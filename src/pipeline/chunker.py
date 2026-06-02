@@ -5,6 +5,7 @@ from typing import cast
 from llama_index.core.node_parser import SentenceSplitter
 from llama_index.core.schema import Document, TextNode
 
+from src.observability import observe
 from src.pipeline import Chunker as ChunkerABC
 
 
@@ -15,6 +16,7 @@ class RecursiveChunker(ChunkerABC):
             chunk_overlap=chunk_overlap,
         )
 
+    @observe(as_type="span")
     def chunk(self, documents: list[Document]) -> list[TextNode]:
         nodes = self._splitter.get_nodes_from_documents(documents)
         return cast(list[TextNode], nodes)

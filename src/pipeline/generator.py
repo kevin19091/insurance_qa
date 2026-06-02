@@ -7,6 +7,7 @@ from llama_index.core.llms import ChatMessage, MessageRole
 from llama_index.core.schema import NodeWithScore, TextNode
 from llama_index.llms.openai import OpenAI
 
+from src.observability import observe
 from src.pipeline import Generator as GeneratorABC
 
 
@@ -49,6 +50,7 @@ class OpenAIGenerator(GeneratorABC):
             "total_tokens": self._total_prompt_tokens + self._total_completion_tokens,
         }
 
+    @observe(as_type="generation")
     def generate(self, query: str, context_nodes: list[NodeWithScore]) -> str:
         messages = _build_prompt(query, context_nodes)
         response = self._llm.chat(messages)
@@ -60,6 +62,7 @@ class OpenAIGenerator(GeneratorABC):
         self._total_prompt_tokens += usage.get("prompt_tokens", 0)
         self._total_completion_tokens += usage.get("completion_tokens", 0)
 
+    @observe(as_type="generation")
     async def stream(  # type: ignore[override]
         self, query: str, context_nodes: list[NodeWithScore]
     ) -> AsyncGenerator[str, None]:

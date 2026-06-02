@@ -3,10 +3,12 @@
 import fitz
 from llama_index.core.schema import Document
 
+from src.observability import observe
 from src.pipeline import Parser as ParserABC
 
 
 class PyMuPDFParser(ParserABC):
+    @observe(as_type="span")
     def parse(self, file_path: str) -> list[Document]:
         docs: list[Document] = []
         with fitz.open(file_path) as pdf:
