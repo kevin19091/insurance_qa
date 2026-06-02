@@ -148,6 +148,13 @@ def main() -> None:
         for metric, score in sorted(scores.items()):
             print(f"    {metric}: {score:.4f}")
 
+        lat = artifact["eval_results"].get("latency")
+        if lat:
+            print("\n  Latency:")
+            for phase in ["retrieval", "generation", "total"]:
+                s = lat[phase]
+                print(f"    {phase}: avg={s['avg_ms']}ms  p50={s['p50_ms']}ms  p95={s['p95_ms']}ms")
+
     print(f"\n  Artifacts: {output_dir}/")
 
 
