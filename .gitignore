@@ -41,3 +41,5 @@ frontend/dist/
 # Misc
 *.tmp
 .cache/
+frontend/build/
+frontend/node_modules/

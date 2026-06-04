@@ -6,6 +6,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 
 from src.config import PipelineConfig
 from src.observability import get_langfuse
@@ -31,6 +32,4 @@ from src.api.routes import router  # noqa: E402
 
 app.include_router(router)
 
-# Serve React frontend in production:
-# from fastapi.staticfiles import StaticFiles
-# app.mount("/", StaticFiles(directory="frontend/build", html=True), name="frontend")
+app.mount("/", StaticFiles(directory="frontend/build", html=True), name="frontend")
