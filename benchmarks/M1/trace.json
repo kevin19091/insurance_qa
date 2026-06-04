@@ -1,9 +1,9 @@
 {
   "milestone": "M1",
-  "timestamp": "2026-06-02T19:02:38.171921+00:00",
+  "timestamp": "2026-06-04T14:31:17.689374+00:00",
   "config_path": "benchmarks/M1/config.yaml",
   "seed": 42,
   "prompt_version": "v1",
-  "duration_seconds": 111.73,
+  "duration_seconds": 119.76,
   "index_node_count": 37
 }

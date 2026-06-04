@@ -1,13 +1,13 @@
 [
   {
-    "question": "What kind of plan is the Max Life Group Credit Life Secure Plan?",
-    "reference_answer": "It is a Non-Linked and Non-Participating Single Premium Group Term Insurance Plan. No maturity or survival benefits are payable.",
-    "source_pages": [3]
+    "question": "What's the difference between the Decreasing Cover and Level Cover options for the Death Benefit?",
+    "reference_answer": "Under Option A (Decreasing Cover), the Sum Assured decreases over the Period of Coverage in line with the loan repayment schedule as specified in the Certificate of Insurance. Under Option B (Level Cover), the Sum Assured remains constant throughout the Period of Coverage as chosen by the Master Policyholder or Member and specified in the Certificate of Insurance. The moratorium option is only available with Option A.",
+    "source_pages": [10]
   },
   {
-    "question": "How many people are needed to form a group to get this insurance?",
-    "reference_answer": "The minimum group size should be 50 Members for obtaining insurance coverage under this policy.",
-    "source_pages": [4]
+    "question": "If a 68-year-old borrower with Option A (Decreasing Cover) dies during the moratorium period, how much does the nominee receive?",
+    "reference_answer": "The member is eligible for coverage as they are between 15 and 69 years of age at entry. If the moratorium option was chosen (available only with Option A in multiples of 3 months, minimum 3 months), then upon death during the moratorium period and claim approval, the Company shall pay the Sum Assured as specified in the Certificate of Insurance, irrespective of the actual loan outstanding. After the moratorium period expires, the Sum Assured would decrease over the remainder of the Period of Coverage.",
+    "source_pages": [8, 10]
   },
   {
     "question": "I'm 68 and applying for a loan. Am I eligible for coverage?",
@@ -15,9 +15,9 @@
     "source_pages": [8]
   },
   {
-    "question": "Who pays the premium and what does it cover?",
-    "reference_answer": "A single Premium is payable by the Master Policyholder or the Member in respect of each Member on or before his Entry Date. The Premium is the amount specified in the Schedule paid to secure the Death Benefit under this policy.",
-    "source_pages": [8, 12]
+    "question": "If a member paid a premium of ₹10,000 and surrenders after 24 months of a 60-month coverage period with Level Cover Sum Assured of ₹5,00,000, what is the surrender value?",
+    "reference_answer": "Using the surrender value formula: Surrender Value = 70% of Premium paid x (Unexpired Period of Coverage in months / Total Period of Coverage in months) x (Sum Assured on surrender date / Sum Assured on commencement). Unexpired period = 60 - 24 = 36 months. For Level Cover, the Sum Assured ratio is 1. So: 0.70 x ₹10,000 x (36/60) x 1 = ₹4,200.",
+    "source_pages": [10]
   },
   {
     "question": "My spouse passed away — what documents do I need to submit a claim?",
@@ -35,9 +35,9 @@
     "source_pages": [10]
   },
   {
-    "question": "Can I change who gets the death benefit?",
-    "reference_answer": "Yes, a change in nomination may be made by the Member at any time during the Period of Coverage by informing the Master Policyholder in writing and registering the same with the Master Policyholder.",
-    "source_pages": [15]
+    "question": "Under what circumstances can Max Life Insurance repudiate or cancel a claim or policy?",
+    "reference_answer": "The Company can repudiate a claim or cancel the policy in several circumstances: (1) if the age declared is found to be incorrect, the Company may cancel and pay Surrender Value or adjust benefits (Section 9.5); (2) concealment, non-disclosure, misrepresentation, or fraud renders the policy voidable, and the Company may cancel and pay Surrender Value once fraud is established under Section 45 of the Insurance Act (Section 9.6.2); (3) if policy conditions are contravened or untrue averments are made, the Insurance ceases and the policy may be cancelled (Section 9.6.3); (4) if a fraudulent claim is made, the policy becomes void (Section 9.10); (5) the Company may also scrutinize documents and investigate the cause of death to repudiate partially or completely (Section 5.3).",
+    "source_pages": [11, 14, 15]
   },
   {
     "question": "What happens if the group policy is cancelled?",

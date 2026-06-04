@@ -41,120 +41,120 @@
     "prompt_version": "v1"
   },
   "scores": {
-    "faithfulness": 0.4,
-    "answer_relevancy": 0.37253101767694835,
+    "faithfulness": 0.6875,
+    "answer_relevancy": 0.3817060932274834,
     "context_precision": 0.0,
     "context_recall": 0.0
   },
   "per_question": [
     {
-      "question": "What kind of plan is the Max Life Group Credit Life Secure Plan?",
-      "reference_answer": "It is a Non-Linked and Non-Participating Single Premium Group Term Insurance Plan. No maturity or survival benefits are payable.",
-      "generated_answer": "The Max Life Group Credit Life Secure Plan is a type of group insurance plan designed to provide life insurance coverage to borrowers. It is typically offered by financial institutions to cover the outstanding loan amount in the event of the borrower's death. This ensures that the borrower's family or beneficiaries are not burdened with the loan repayment in case of an unforeseen circumstance. The plan is aimed at providing financial security and peace of mind to both the lender and the borrower. It may include features such as flexible coverage amounts, premium payment options, and the ability to cover multiple borrowers under a single policy. For specific details and features, it's best to consult the official Max Life Insurance resources or a licensed insurance advisor.",
+      "question": "What's the difference between the Decreasing Cover and Level Cover options for the Death Benefit?",
+      "reference_answer": "Under Option A (Decreasing Cover), the Sum Assured decreases over the Period of Coverage in line with the loan repayment schedule as specified in the Certificate of Insurance. Under Option B (Level Cover), the Sum Assured remains constant throughout the Period of Coverage as chosen by the Master Policyholder or Member and specified in the Certificate of Insurance. The moratorium option is only available with Option A.",
+      "generated_answer": "In life insurance, the Death Benefit can be structured in different ways, primarily through Decreasing Cover and Level Cover options. Here\u2019s a brief overview of the differences between the two:\n\n1. **Decreasing Cover**:\n   - The Death Benefit amount decreases over the term of the policy. \n   - This option is often used in conjunction with loans or mortgages, where the outstanding balance decreases over time. \n   - As the coverage amount reduces, the premium may also be lower compared to a level cover option.\n   - It is suitable for individuals who want to align their insurance coverage with decreasing financial obligations.\n\n2. **Level Cover**:\n   - The Death Benefit amount remains constant throughout the term of the policy.\n   - This means that the beneficiaries will receive the same amount regardless of when the insured passes away during the policy term.\n   - Level Cover is typically chosen by those who want to ensure a fixed financial support for their beneficiaries, regardless of when the claim is made.\n   - Premiums for level cover are generally higher than those for decreasing cover, as the coverage amount does not diminish over time.\n\nChoosing between these options depends on individual financial needs and circumstances. It's important to assess your specific situation and consider factors such as outstanding debts, future financial obligations, and the needs of your beneficiaries when making a decision.",
       "contexts": [],
       "latency": {
         "retrieval_latency_ms": 0.0,
-        "generation_latency_ms": 3849.3,
-        "total_latency_ms": 3849.3
+        "generation_latency_ms": 6190.5,
+        "total_latency_ms": 6190.6
       }
     },
     {
-      "question": "How many people are needed to form a group to get this insurance?",
-      "reference_answer": "The minimum group size should be 50 Members for obtaining insurance coverage under this policy.",
-      "generated_answer": "To form a group for group insurance plans, typically a minimum of 10 to 20 members is required, depending on the specific policy and insurer's guidelines. However, the exact number can vary based on the type of group insurance and the insurer's policies. It's best to check with Max Life Insurance directly for their specific requirements regarding group formation.",
+      "question": "If a 68-year-old borrower with Option A (Decreasing Cover) dies during the moratorium period, how much does the nominee receive?",
+      "reference_answer": "The member is eligible for coverage as they are between 15 and 69 years of age at entry. If the moratorium option was chosen (available only with Option A in multiples of 3 months, minimum 3 months), then upon death during the moratorium period and claim approval, the Company shall pay the Sum Assured as specified in the Certificate of Insurance, irrespective of the actual loan outstanding. After the moratorium period expires, the Sum Assured would decrease over the remainder of the Period of Coverage.",
+      "generated_answer": "In a decreasing cover life insurance policy, the sum assured decreases over time. If a 68-year-old borrower with Option A (Decreasing Cover) dies during the moratorium period, the amount the nominee receives would depend on the specific terms of the policy, including the initial sum assured and the rate at which it decreases.\n\nTypically, the nominee would receive the current value of the sum assured at the time of the borrower's death, which would be lower than the original sum assured due to the decreasing nature of the cover. To get the exact amount, you would need to refer to the policy documents or contact the insurance provider for the specific details regarding the decreasing cover schedule.",
       "contexts": [],
       "latency": {
         "retrieval_latency_ms": 0.0,
-        "generation_latency_ms": 2427.6,
-        "total_latency_ms": 2427.6
+        "generation_latency_ms": 2846.2,
+        "total_latency_ms": 2846.2
       }
     },
     {
       "question": "I'm 68 and applying for a loan. Am I eligible for coverage?",
       "reference_answer": "Yes, you are eligible if you are a natural person between 15 and 69 years of age on the Date of Commencement of Risk or Entry Date, and will not be more than 70 years of age on the date the Insurance expires. The proposed Period of Coverage must be at least 1 year.",
-      "generated_answer": "Eligibility for coverage can vary based on the specific insurance product and the policies of the insurance provider. Generally, many insurance companies, including Max Life Insurance, offer coverage options for individuals up to a certain age, but there may be specific terms and conditions that apply.\n\nAt 68, you may still be eligible for certain types of life insurance or health insurance products, but factors such as your health status, the type of coverage you are seeking, and the amount of coverage may influence your eligibility. It's best to consult directly with a Max Life Insurance representative or visit their website for detailed information tailored to your situation.",
+      "generated_answer": "Eligibility for coverage can vary based on the specific insurance product and the policies of the insurance provider. Generally, many insurance companies, including Max Life Insurance, offer coverage options for individuals up to a certain age, but there may be specific terms and conditions that apply.\n\nAt 68, you may still be eligible for certain types of life insurance or health insurance products, but factors such as your health status, the type of coverage you are seeking, and the amount of coverage may influence your eligibility and premium rates.\n\nIt's best to contact Max Life Insurance directly or consult with an insurance advisor to get detailed information tailored to your situation. They can provide you with the most accurate and relevant information regarding your eligibility for coverage.",
       "contexts": [],
       "latency": {
         "retrieval_latency_ms": 0.0,
-        "generation_latency_ms": 2595.9,
-        "total_latency_ms": 2595.9
+        "generation_latency_ms": 2820.4,
+        "total_latency_ms": 2820.4
       }
     },
     {
-      "question": "Who pays the premium and what does it cover?",
-      "reference_answer": "A single Premium is payable by the Master Policyholder or the Member in respect of each Member on or before his Entry Date. The Premium is the amount specified in the Schedule paid to secure the Death Benefit under this policy.",
-      "generated_answer": "In an insurance policy, the premium is typically paid by the policyholder, who is the individual or entity that purchases the insurance coverage. The premium is the amount of money that the policyholder agrees to pay to the insurance company in exchange for the coverage provided by the policy.\n\nThe coverage provided by the premium can vary widely depending on the type of insurance policy. For life insurance, the premium covers the risk of the insured person's death, providing a death benefit to the beneficiaries named in the policy. This benefit can help cover expenses such as funeral costs, outstanding debts, and provide financial support for dependents.\n\nIn other types of insurance, such as health, auto, or home insurance, the premium covers different risks and provides various benefits, such as medical expenses, vehicle repairs, or property damage.\n\nIt's important to review the specific terms and conditions of the insurance policy to understand what is covered and any exclusions that may apply.",
+      "question": "If a member paid a premium of \u20b910,000 and surrenders after 24 months of a 60-month coverage period with Level Cover Sum Assured of \u20b95,00,000, what is the surrender value?",
+      "reference_answer": "Using the surrender value formula: Surrender Value = 70% of Premium paid x (Unexpired Period of Coverage in months / Total Period of Coverage in months) x (Sum Assured on surrender date / Sum Assured on commencement). Unexpired period = 60 - 24 = 36 months. For Level Cover, the Sum Assured ratio is 1. So: 0.70 x \u20b910,000 x (36/60) x 1 = \u20b94,200.",
+      "generated_answer": "The surrender value of a life insurance policy can vary based on the specific terms and conditions set by the insurance provider. Generally, for a policy like the one you described, the surrender value is typically a percentage of the premiums paid, depending on how long the policy has been in force.\n\nIn many cases, insurance companies have a surrender value formula that may include factors such as the number of premiums paid, the policy's duration, and any applicable surrender charges. \n\nFor a policy with a 60-month coverage period, if the member has paid \u20b910,000 in premiums for 24 months, the surrender value might be calculated based on the total premiums paid and the policy's specific surrender value percentage at that point in time.\n\nHowever, without specific details from the policy document regarding the surrender value calculation, it's difficult to provide an exact figure. It is advisable to contact Max Life Insurance directly or refer to the policy document for precise information regarding the surrender value in this scenario.",
       "contexts": [],
       "latency": {
         "retrieval_latency_ms": 0.0,
-        "generation_latency_ms": 4269.7,
-        "total_latency_ms": 4269.7
+        "generation_latency_ms": 4716.8,
+        "total_latency_ms": 4716.9
       }
     },
     {
       "question": "My spouse passed away \u2014 what documents do I need to submit a claim?",
       "reference_answer": "You need to submit: (i) claimant's statement in the prescribed form; (ii) original Certificate of Insurance; (iii) original death certificate issued by the local or municipal authority; (iv) identity proof of the Member and the Nominee(s) bearing their photographs and signatures; and (v) any other documents or information required by the Company for assessing and approving the claim request.",
-      "generated_answer": "I'm very sorry to hear about your loss. To submit a claim for your spouse's life insurance policy, you typically need to provide the following documents:\n\n1. **Claim Form**: This is usually provided by the insurance company and needs to be filled out.\n\n2. **Death Certificate**: An official copy of the death certificate is required to verify the passing of the insured.\n\n3. **Policy Document**: A copy of the life insurance policy, if available, can help expedite the process.\n\n4. **Proof of Identity**: Your identification, such as a government-issued ID, may be required to verify your identity as the claimant.\n\n5. **Marriage Certificate**: This may be needed to establish your relationship to the deceased.\n\n6. **Medical Records**: In some cases, the insurer may request medical records or information regarding the cause of death.\n\n7. **Any Additional Documentation**: Depending on the insurer's requirements, there may be other documents needed, such as tax identification numbers or additional forms.\n\nIt's best to contact Max Life Insurance directly or visit their website for specific instructions and to ensure you have all the necessary documents for your claim.",
+      "generated_answer": "I'm very sorry to hear about your loss. To submit a claim for your spouse's life insurance policy, you typically need to provide the following documents:\n\n1. **Claim Form**: This is usually provided by the insurance company and needs to be filled out.\n\n2. **Death Certificate**: An official copy of the death certificate is required to verify the death.\n\n3. **Policy Document**: If available, the original life insurance policy document or a copy of it.\n\n4. **Proof of Identity**: Your identification documents, such as a government-issued ID, to verify your identity as the claimant.\n\n5. **Marriage Certificate**: This may be required to establish your relationship to the deceased.\n\n6. **Medical Records**: In some cases, the insurer may request medical records or information regarding the cause of death.\n\n7. **Any Additional Documentation**: Depending on the insurer's requirements, there may be other documents needed, such as tax identification numbers or additional forms.\n\nIt's best to contact Max Life Insurance directly or visit their website for specific instructions and to ensure you have all the necessary documents for your claim.",
       "contexts": [],
       "latency": {
         "retrieval_latency_ms": 0.0,
-        "generation_latency_ms": 4875.8,
-        "total_latency_ms": 4875.9
+        "generation_latency_ms": 3747.2,
+        "total_latency_ms": 3747.2
       }
     },
     {
       "question": "How soon must I notify Max Life after a death?",
       "reference_answer": "The Master Policyholder must notify Max Life Insurance in writing of the happening of the Insured Event within 30 days from the date of the event. The claim should be registered at the Claims Unit, Max Life Insurance Company Limited, Plot 90A, Sector 18, HUDA, Gurugram 122002, Haryana, India.",
-      "generated_answer": "You should notify Max Life Insurance as soon as possible after the death of the policyholder. Typically, it is recommended to inform the insurance company within 30 days of the death to ensure a smooth claims process. However, specific timelines may vary based on the policy terms, so it's best to check your policy documents or contact Max Life directly for detailed guidance.",
+      "generated_answer": "You should notify Max Life Insurance as soon as possible after the death of the policyholder. Typically, it is advisable to inform the insurance company within 30 days of the death to ensure a smooth claims process. However, specific timelines may vary based on the terms of the policy, so it's best to check the policy documents or contact Max Life directly for detailed guidance.",
       "contexts": [],
       "latency": {
         "retrieval_latency_ms": 0.0,
-        "generation_latency_ms": 2675.2,
-        "total_latency_ms": 2675.2
+        "generation_latency_ms": 1774.8,
+        "total_latency_ms": 1774.8
       }
     },
     {
       "question": "Can I cancel my coverage and get money back?",
       "reference_answer": "Yes, a Member may at any time request surrender of his Insurance by making a written request through the Master Policyholder or directly to the Company. The Surrender Value is calculated as: 70% of Premium paid multiplied by (Unexpired Period of Coverage in months / Total Period of Coverage in months) multiplied by (Sum Assured applicable on the date of Surrender / Sum Assured on the Date of Commencement of Risk).",
-      "generated_answer": "Whether you can cancel your coverage and receive money back depends on the type of insurance policy you have and the terms outlined in your contract. \n\nFor many life insurance policies, if you cancel within a certain period (often referred to as the \"free look\" period), you may be eligible for a full refund of the premiums paid. After this period, if you have a whole life or universal life policy, you may receive a cash surrender value, which is the amount you can get back upon cancellation, but this may be less than the total premiums paid.\n\nFor term life insurance, typically, there is no cash value, and you would not receive any money back upon cancellation.\n\nIt's important to review your specific policy documents or contact your insurance provider for detailed information regarding cancellation and potential refunds.",
+      "generated_answer": "Whether you can cancel your coverage and receive money back depends on the type of insurance policy you have and the terms outlined in your contract. \n\nFor many life insurance policies, if you cancel within a certain period (often referred to as the \"free look\" period), you may be eligible for a full refund of the premiums paid. After this period, if you have a whole life or universal life policy, you may receive the cash value accumulated in the policy upon cancellation. However, term life insurance typically does not have a cash value, so you would not receive any money back if you cancel.\n\nIt's important to review your specific policy documents or contact your insurance provider for detailed information regarding cancellation and any potential refunds.",
       "contexts": [],
       "latency": {
         "retrieval_latency_ms": 0.0,
-        "generation_latency_ms": 2529.7,
-        "total_latency_ms": 2529.7
+        "generation_latency_ms": 2556.0,
+        "total_latency_ms": 2556.0
       }
     },
     {
-      "question": "Can I change who gets the death benefit?",
-      "reference_answer": "Yes, a change in nomination may be made by the Member at any time during the Period of Coverage by informing the Master Policyholder in writing and registering the same with the Master Policyholder.",
-      "generated_answer": "Yes, you can change the beneficiary of your life insurance policy, including who receives the death benefit, as long as you are the policyholder and the policy allows for such changes. Typically, you would need to fill out a beneficiary change form provided by your insurance company. It's important to review your policy and consult with your insurance agent or company to understand the specific process and any implications of changing beneficiaries. Keep in mind that some policies may have restrictions or require the consent of the current beneficiary if they are irrevocable.",
+      "question": "Under what circumstances can Max Life Insurance repudiate or cancel a claim or policy?",
+      "reference_answer": "The Company can repudiate a claim or cancel the policy in several circumstances: (1) if the age declared is found to be incorrect, the Company may cancel and pay Surrender Value or adjust benefits (Section 9.5); (2) concealment, non-disclosure, misrepresentation, or fraud renders the policy voidable, and the Company may cancel and pay Surrender Value once fraud is established under Section 45 of the Insurance Act (Section 9.6.2); (3) if policy conditions are contravened or untrue averments are made, the Insurance ceases and the policy may be cancelled (Section 9.6.3); (4) if a fraudulent claim is made, the policy becomes void (Section 9.10); (5) the Company may also scrutinize documents and investigate the cause of death to repudiate partially or completely (Section 5.3).",
+      "generated_answer": "Max Life Insurance, like other insurance providers, may repudiate or cancel a claim or policy under certain circumstances, which typically include:\n\n1. **Misrepresentation or Fraud**: If the policyholder provides false information or conceals material facts during the application process or at the time of claim, the insurer may deny the claim or cancel the policy.\n\n2. **Non-Payment of Premiums**: If the policyholder fails to pay premiums within the stipulated time frame, the policy may lapse, and any claims made during this period may be denied.\n\n3. **Policy Exclusions**: Claims that fall under specific exclusions mentioned in the policy document may be denied. This can include certain pre-existing conditions or activities that are not covered.\n\n4. **Violation of Policy Terms**: If the policyholder violates any terms and conditions outlined in the policy, such as engaging in illegal activities or not adhering to the policy's requirements, the insurer may have grounds to repudiate a claim.\n\n5. **Inaccurate Claim Submission**: If the claim submitted contains inaccuracies or is not supported by the necessary documentation, it may be rejected.\n\n6. **Change in Risk Profile**: If there is a significant change in the risk profile of the insured individual that was not disclosed, the insurer may choose to cancel the policy.\n\nIt is important for policyholders to thoroughly read their policy documents and understand the terms and conditions to avoid any issues with claims. For specific situations or concerns, it is advisable to contact Max Life Insurance directly or consult with a qualified insurance advisor.",
       "contexts": [],
       "latency": {
         "retrieval_latency_ms": 0.0,
-        "generation_latency_ms": 2452.8,
-        "total_latency_ms": 2452.8
+        "generation_latency_ms": 7423.0,
+        "total_latency_ms": 7423.0
       }
     },
     {
       "question": "What happens if the group policy is cancelled?",
       "reference_answer": "Either the Master Policyholder or the Company may terminate this Policy by giving 90 days prior written notice to the other party. Upon termination, each Member's coverage continues as an individual policy until the date of expiration of the Period of Coverage. No new enrollment forms will be accepted from the date of termination.",
-      "generated_answer": "If a group insurance policy is cancelled, several outcomes may occur depending on the terms of the policy and the specific circumstances surrounding the cancellation. Here are some common implications:\n\n1. **Coverage Termination**: The insurance coverage provided under the group policy will cease, meaning that all members covered under the policy will no longer have insurance protection.\n\n2. **Notification**: Typically, the insurer will notify all members of the group about the cancellation and the effective date of termination.\n\n3. **Conversion Options**: In some cases, members may have the option to convert their group policy to an individual policy. This allows them to maintain coverage without having to undergo a new underwriting process, although premiums may be higher.\n\n4. **Refund of Premiums**: Depending on the terms of the policy and the reason for cancellation, there may be a refund of any unearned premiums to the policyholder.\n\n5. **Impact on Benefits**: Any claims that are pending at the time of cancellation may be affected, and members should check with the insurer regarding the status of any claims.\n\n6. **Alternative Coverage**: Members may need to seek alternative insurance coverage to ensure they remain protected after the group policy is cancelled.\n\nIt's important for members to review the specific terms of their group policy and consult with their employer or the insurance provider for detailed information regarding the cancellation process and their options.",
+      "generated_answer": "If a group insurance policy is cancelled, several things may happen depending on the terms of the policy and the specific circumstances surrounding the cancellation:\n\n1. **Coverage Termination**: The coverage provided under the group policy will cease, meaning that all members covered under the policy will no longer have insurance protection.\n\n2. **Notification**: Typically, the insurer will notify the policyholder (usually the employer or organization) and the insured members about the cancellation and the effective date of termination.\n\n3. **Conversion Options**: Many group policies offer a conversion option, allowing members to convert their group coverage to an individual policy without needing to provide evidence of insurability. This option is usually available for a limited time after the cancellation.\n\n4. **Refund of Premiums**: Depending on the terms of the policy and the reason for cancellation, there may be a refund of unearned premiums to the policyholder.\n\n5. **Impact on Benefits**: Any benefits that were being provided under the group policy will no longer be available, which may affect members' financial security and access to healthcare services.\n\n6. **Reinstatement**: In some cases, if the policy is cancelled due to non-payment of premiums, there may be a possibility to reinstate the policy if the outstanding premiums are paid within a certain timeframe.\n\nIt's important for members to review the specific terms of their group policy and consult with their employer or the insurance provider for detailed information regarding the cancellation process and available options.",
       "contexts": [],
       "latency": {
         "retrieval_latency_ms": 0.0,
-        "generation_latency_ms": 5796.7,
-        "total_latency_ms": 5796.7
+        "generation_latency_ms": 4513.2,
+        "total_latency_ms": 4513.2
       }
     },
     {
       "question": "Do I need a medical exam to get coverage?",
       "reference_answer": "Not necessarily. The Free Cover Limit is the Sum Assured amount up to which Insurance cover can be allowed based on simple insurability conditions without requiring any evidence of health. If the Sum Assured exceeds the Free Cover Limit, health evidence may be required.",
-      "generated_answer": "Whether you need a medical exam to get coverage from Max Life Insurance depends on several factors, including the type of policy you are applying for, your age, the amount of coverage, and your health history. Some policies may offer coverage without a medical exam, especially for lower coverage amounts or for applicants who meet certain criteria. However, for higher coverage amounts or if there are specific health concerns, a medical exam may be required. It's best to check with a Max Life Insurance representative or review the specific policy details for your situation.",
+      "generated_answer": "Whether you need a medical exam to get coverage from Max Life Insurance depends on several factors, including the type of policy you are applying for, your age, the amount of coverage, and your health history. \n\nFor some policies, especially those with lower coverage amounts or for younger applicants, a medical exam may not be required. However, for larger coverage amounts or if you have certain health conditions, a medical exam might be necessary to assess your health risk.\n\nIt's best to check with a Max Life Insurance representative or review the specific policy details to understand the requirements for your situation.",
       "contexts": [],
       "latency": {
         "retrieval_latency_ms": 0.0,
-        "generation_latency_ms": 2266.7,
-        "total_latency_ms": 2266.7
+        "generation_latency_ms": 2576.7,
+        "total_latency_ms": 2576.7
       }
     }
   ],
@@ -167,19 +167,19 @@
       "p95_ms": 0.0
     },
     "generation": {
-      "avg_ms": 3373.9,
-      "min_ms": 2266.7,
-      "max_ms": 5796.7,
-      "p50_ms": 2675.2,
-      "p95_ms": 5796.7
+      "avg_ms": 3916.5,
+      "min_ms": 1774.8,
+      "max_ms": 7423.0,
+      "p50_ms": 3747.2,
+      "p95_ms": 7423.0
     },
     "total": {
-      "avg_ms": 3373.9,
-      "min_ms": 2266.7,
-      "max_ms": 5796.7,
-      "p50_ms": 2675.2,
-      "p95_ms": 5796.7
+      "avg_ms": 3916.5,
+      "min_ms": 1774.8,
+      "max_ms": 7423.0,
+      "p50_ms": 3747.2,
+      "p95_ms": 7423.0
     },
-    "ragas_eval_seconds": 32.9
+    "ragas_eval_seconds": 27.19
   }
 }
