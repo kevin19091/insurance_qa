@@ -1,0 +1,14 @@
+{
+  "milestone": "M1",
+  "timestamp": "2026-06-10T15:02:12.049691+00:00",
+  "config_path": "benchmarks/M1/config.yaml",
+  "config_override": {
+    "chunk": {
+      "chunk_size": 250
+    }
+  },
+  "seed": 42,
+  "prompt_version": "v1",
+  "duration_seconds": 135.51,
+  "index_node_count": 77
+}
