@@ -16,6 +16,9 @@ Each issue is a thin, demonstrable end-to-end slice. Work sequentially — each 
 | 10 | M1 — Naive RAG baseline benchmark | AFK | #9 | Full RAG pipeline on all eval pairs. Artifacts in `benchmarks/M1/`. Compare vs M0. |
 | 11 | Web chat UI skeleton | AFK | #6 | React app: text input, SSE streaming, markdown render, disclaimer footer. |
 | 12 | System prompt manager | AFK | #3 | Load prompt from `prompts/system_prompt.yaml` by version. Record version in benchmark artifacts. |
+| 13 | Config parameter overrides | AFK | #10 | `--chunk-size N` flag for `src.run`. Override any config value from CLI without creating a new YAML per variant. |
+| 14 | Execute chunk_size sweep | AFK | #13 | Run 5 benchmarks: chunk_size in [250, 500, 750, 1000, 1500]. Save to `benchmarks/M2{a,b,c,d,e}/`. |
+| 15 | M2 comparison report | HITL | #14 | Aggregate 5 results into comparison table. Analyze faithfulness, cost, latency vs chunk size. |
 
 ## Dependency Graph
 

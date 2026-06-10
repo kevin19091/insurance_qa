@@ -29,6 +29,51 @@ COST_PER_1K_TOKENS: dict[str, float] = {
 }
 
 
+def _parse_overrides(raw: list[str]) -> dict[str, Any]:
+    parsed: dict[str, Any] = {}
+    for item in raw:
+        if "=" not in item:
+            print(f"Invalid override: {item} (expected key=value)", file=sys.stderr)
+            sys.exit(1)
+        key, value = item.split("=", 1)
+        parts = key.split(".")
+        target = parsed
+        for part in parts[:-1]:
+            target = target.setdefault(part, {})
+        target[parts[-1]] = _coerce(value)
+    return parsed
+
+
+def _coerce(value: str) -> Any:
+    if value.lower() in ("true", "false"):
+        return value.lower() == "true"
+    try:
+        return int(value)
+    except ValueError:
+        pass
+    try:
+        return float(value)
+    except ValueError:
+        pass
+    return value
+
+
+def _apply_overrides(config: PipelineConfig, overrides: dict[str, Any]) -> None:
+    for section, fields in overrides.items():
+        if not hasattr(config, section):
+            print(f"Unknown config section: {section}", file=sys.stderr)
+            sys.exit(1)
+        sub = getattr(config, section)
+        if isinstance(fields, dict):
+            for field, value in fields.items():
+                if not hasattr(sub, field):
+                    print(f"Unknown config field: {section}.{field}", file=sys.stderr)
+                    sys.exit(1)
+                setattr(sub, field, value)
+        else:
+            setattr(config, section, fields)
+
+
 def _estimate_cost(model: str, prompt_tokens: int, completion_tokens: int) -> dict[str, float]:
     rate = COST_PER_1K_TOKENS.get(model, 0.000150)
     prompt_cost = (prompt_tokens / 1000) * rate
@@ -51,7 +96,12 @@ def _build_usage_log(generator: Any, model: str) -> dict[str, Any]:
     }
 
 
-def run_benchmark(milestone: str, output_dir: Path, skip_eval: bool = False) -> dict[str, Any]:
+def run_benchmark(
+    milestone: str,
+    output_dir: Path,
+    skip_eval: bool = False,
+    overrides: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     start_time = time.time()
     config_path = Path("benchmarks") / milestone / "config.yaml"
 
@@ -60,6 +110,10 @@ def run_benchmark(milestone: str, output_dir: Path, skip_eval: bool = False) -> 
         sys.exit(1)
 
     config = PipelineConfig.from_yaml(config_path)
+    applied_overrides: dict[str, Any] = {}
+    if overrides:
+        _apply_overrides(config, overrides)
+        applied_overrides = overrides
     output_dir.mkdir(parents=True, exist_ok=True)
 
     print(f"Building index for {milestone}...")
@@ -71,6 +125,7 @@ def run_benchmark(milestone: str, output_dir: Path, skip_eval: bool = False) -> 
         "milestone": milestone,
         "timestamp": datetime.now(timezone.utc).isoformat(),  # noqa: UP017
         "config_path": str(config_path),
+        "config_override": applied_overrides if applied_overrides else None,
         "seed": config.seed,
         "prompt_version": config.prompt_version,
         "duration_seconds": 0.0,
@@ -128,11 +183,21 @@ def main() -> None:
         action="store_true",
         help="Skip eval step (ingest only)",
     )
+    parser.add_argument(
+        "--override",
+        action="append",
+        default=[],
+        help="Override config value, e.g. --override chunk.chunk_size=250",
+    )
     args = parser.parse_args()
+
+    overrides = _parse_overrides(args.override) if args.override else {}
 
     output_dir = Path(args.output_dir) if args.output_dir else Path("benchmarks") / args.milestone
 
-    artifact = run_benchmark(args.milestone, output_dir, skip_eval=args.skip_eval)
+    artifact = run_benchmark(
+        args.milestone, output_dir, skip_eval=args.skip_eval, overrides=overrides
+    )
 
     print("\n=== Benchmark Summary ===")
     print(f"  Milestone:   {args.milestone}")
