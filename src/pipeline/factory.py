@@ -11,7 +11,7 @@ from llama_index.vector_stores.chroma import ChromaVectorStore
 
 from src.config import PipelineConfig
 from src.pipeline import Chunker, Embedder, Generator, Parser, Retriever
-from src.pipeline.chunker import RecursiveChunker
+from src.pipeline.chunker import AgenticChunker, RecursiveChunker, SemanticChunker, SentenceChunker
 from src.pipeline.embedder import BgeEmbedder
 from src.pipeline.generator import OpenAIGenerator
 from src.pipeline.parser import PyMuPDFParser
@@ -26,10 +26,18 @@ def build_parser(config: PipelineConfig) -> Parser:
 
 
 def build_chunker(config: PipelineConfig) -> Chunker:
-    return RecursiveChunker(
-        chunk_size=config.chunk.chunk_size,
-        chunk_overlap=config.chunk.chunk_overlap,
-    )
+    strategy = config.chunk.strategy
+    kw = dict(chunk_size=config.chunk.chunk_size, chunk_overlap=config.chunk.chunk_overlap)
+    if strategy == "recursive":
+        return RecursiveChunker(**kw)
+    if strategy == "sentence":
+        return SentenceChunker(**kw)
+    if strategy == "semantic":
+        return SemanticChunker(**kw)
+    if strategy == "agentic":
+        return AgenticChunker(**kw)
+    msg = f"Unknown chunk strategy: {strategy}"
+    raise ValueError(msg)
 
 
 def build_embedder(config: PipelineConfig) -> Embedder:
