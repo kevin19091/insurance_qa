@@ -19,6 +19,9 @@ Each issue is a thin, demonstrable end-to-end slice. Work sequentially — each 
 | 13 | Config parameter overrides | AFK | #10 | `--chunk-size N` flag for `src.run`. Override any config value from CLI without creating a new YAML per variant. |
 | 14 | Execute chunk_size sweep | AFK | #13 | Run 5 benchmarks: chunk_size in [250, 500, 750, 1000, 1500]. Save to `benchmarks/M2{a,b,c,d,e}/`. |
 | 15 | M2 comparison report | HITL | #14 | Aggregate 5 results into comparison table. Analyze faithfulness, cost, latency vs chunk size. |
+| 16 | Implement remaining chunking strategies | AFK | #15 | Add SemanticChunker, SentenceChunker, agentic variant. Wire into factory dispatch via `chunk.strategy`. |
+| 17 | Execute chunking strategy sweep | AFK | #16 | Run 4 benchmarks: recursive, semantic, sentence, agentic. Save to `benchmarks/M3{a,b,c,d}/`. |
+| 18 | M3 comparison report | HITL | #17 | Compare chunking strategies. Recommend which to carry forward.
 
 ## Dependency Graph
 
@@ -30,7 +33,7 @@ Each issue is a thin, demonstrable end-to-end slice. Work sequentially — each 
          │                  │
          └──── 5 ──────────┘
                            │
-                           9 ──→ 10
+                           9 ──→ 10 ──→ 13 ──→ 14 ──→ 15 ──→ 16 ──→ 17 ──→ 18
 
 3 ──→ 12 (can run parallel with 4-8)
 
