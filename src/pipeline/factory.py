@@ -15,7 +15,7 @@ from src.config import PipelineConfig
 from src.pipeline import Chunker, Embedder, Generator, Parser, Retriever
 from src.pipeline.chunker import AgenticChunker, RecursiveChunker, SemanticChunker, SentenceChunker
 from src.pipeline.embedder import BgeEmbedder
-from src.pipeline.generator import OpenAIGenerator
+from src.pipeline.generator import ClaudeGenerator, GeminiGenerator, OpenAIGenerator
 from src.pipeline.parser import PyMuPDFParser
 from src.pipeline.retriever import IndexRetriever, NullRetriever
 
@@ -79,11 +79,17 @@ def build_index(config: PipelineConfig) -> VectorStoreIndex:
 
 
 def build_generator(config: PipelineConfig) -> Generator:
-    return OpenAIGenerator(
-        model=config.llm.model,
-        temperature=config.llm.temperature,
-        max_tokens=config.llm.max_tokens,
-    )
+    model: str = config.llm.model
+    temperature: float = config.llm.temperature
+    max_tokens: int = config.llm.max_tokens
+    if model.startswith("gpt"):
+        return OpenAIGenerator(model=model, temperature=temperature, max_tokens=max_tokens)
+    if model.startswith("claude"):
+        return ClaudeGenerator(model=model, temperature=temperature, max_tokens=max_tokens)
+    if model.startswith("gemini"):
+        return GeminiGenerator(model=model, temperature=temperature, max_tokens=max_tokens)
+    msg = f"Unknown LLM model: {model}"
+    raise ValueError(msg)
 
 
 def build_retriever(index: VectorStoreIndex, top_k: int) -> Retriever:

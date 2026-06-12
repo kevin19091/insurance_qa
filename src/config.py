@@ -45,7 +45,16 @@ class QueryRewriteConfig(BaseModel):
 
 
 class LLMConfig(BaseModel):
-    model: Literal["gpt-4o-mini", "gpt-4o", "claude-3.5-sonnet"] = "gpt-4o-mini"
+    model: Literal[
+        "gpt-4o-mini",
+        "gpt-4o",
+        "claude-3.5-sonnet",
+        "claude-3-opus",
+        "claude-3-haiku",
+        "gemini-2.0-flash",
+        "gemini-1.5-pro",
+        "gemini-1.5-flash",
+    ] = "gpt-4o-mini"
     temperature: float = 0.0
     max_tokens: int = 1024
 
