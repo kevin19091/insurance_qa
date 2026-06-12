@@ -44,3 +44,17 @@ frontend/       React web chat UI
 ## Stack at a Glance
 
 LlamaIndex / FastAPI / React / BGE-large / Chroma→Qdrant / GPT-4o-mini / RAGAS / LangFuse / Unstructured
+
+## Development Workflow
+
+Every feature or benchmark follows this cycle in order:
+
+1. **`/grill-with-docs`** — Before writing code or creating issues, grill the plan against `docs/CONTEXT.md` (domain language), `docs/adr/` (decisions), `docs/ARCHITECTURE.md` (data flow). Sharpen terminology, catch contradictions, update docs inline as decisions crystallise.
+
+2. **`/to-issues`** — Break the approved plan into vertical-slice issues. Each issue is a thin end-to-end path through *all* layers (schema → API → UI → tests), NOT a horizontal slice of one layer. Prefer AFK (automated) over HITL (human-in-the-loop) where possible. Append to `docs/ISSUES.md`.
+
+3. **`/tdd`** — Implement each issue test-first (red → green → refactor). Write the test that defines success, then make it pass, then clean up. Tests that require API keys or model loading are guarded with `@pytest.mark.skipif` or `@pytest.mark.slow` — never skip writing them.
+
+4. **`/improve-codebase-architecture`** (or manual refactor) — After each issue lands, review for consolidation, dead code, tightly-coupled modules, or AI-unfriendly patterns. Refactor in tiny independent commits, never mixed with feature work.
+
+Exceptions: Trivial bugfixes (one-line, no design question) may skip #1–#2. Everything else runs the full cycle. Never move to the next issue without explicit approval.
