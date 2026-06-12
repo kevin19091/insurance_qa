@@ -41,6 +41,51 @@ class TestUsageLog:
         assert log["cost"]["total_cost_usd"] > 0
 
 
+class TestOverrideParsing:
+    def test_parse_single_override(self) -> None:
+        from src.run import _parse_overrides
+
+        parsed = _parse_overrides(["chunk.chunk_size=250"])
+        assert parsed == {"chunk": {"chunk_size": 250}}
+
+    def test_parse_multiple_overrides(self) -> None:
+        from src.run import _parse_overrides
+
+        parsed = _parse_overrides(
+            ["chunk.strategy=sentence", "retrieval.top_k=10", "llm.model=gpt-4o"]
+        )
+        assert parsed == {
+            "chunk": {"strategy": "sentence"},
+            "retrieval": {"top_k": 10},
+            "llm": {"model": "gpt-4o"},
+        }
+
+    def test_coerce_types(self) -> None:
+        from src.run import _coerce
+
+        assert _coerce("250") == 250
+        assert _coerce("3.14") == 3.14
+        assert _coerce("true") is True
+        assert _coerce("false") is False
+        assert _coerce("gpt-4o-mini") == "gpt-4o-mini"
+
+    def test_apply_overrides_updates_config(self) -> None:
+        from src.config import PipelineConfig
+        from src.run import _apply_overrides
+
+        config = PipelineConfig()
+        _apply_overrides(config, {"chunk": {"chunk_size": 999}})
+        assert config.chunk.chunk_size == 999
+
+    def test_apply_overrides_unknown_section_exits(self) -> None:
+        from src.config import PipelineConfig
+        from src.run import _apply_overrides
+
+        config = PipelineConfig()
+        with pytest.raises(SystemExit):
+            _apply_overrides(config, {"nonexistent": {"x": 1}})
+
+
 @pytest.mark.slow
 class TestRunBenchmark:
     def test_skip_eval_creates_artifacts(self, tmp_path: Path) -> None:

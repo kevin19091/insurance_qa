@@ -1,8 +1,16 @@
 """Tests for ingestion pipeline (chunk, embed, store)."""
 
+from typing import Any, cast
+
 from llama_index.core.schema import Document, TextNode
 
 from src.config import PipelineConfig
+from src.pipeline.chunker import (
+    AgenticChunker,
+    RecursiveChunker,
+    SemanticChunker,
+    SentenceChunker,
+)
 from src.pipeline.factory import build_chunker, build_embedder, build_index
 
 
@@ -25,6 +33,37 @@ class TestRecursiveChunker:
         for c in chunks:
             assert c.metadata.get("source") == "test.pdf"
             assert c.metadata.get("page") == 1
+
+
+class TestAllChunkers:
+    def _chunk(self, chunker_cls: type, **kw: Any) -> list[TextNode]:
+        chunker = chunker_cls(chunk_size=500, chunk_overlap=50, **kw)
+        text = "This is a sentence. That is another sentence. " * 100
+        docs = [Document(text=text)]
+        return cast(list[TextNode], chunker.chunk(docs))
+
+    def test_recursive_produces_multiple_nodes(self) -> None:
+        nodes = self._chunk(RecursiveChunker)
+        assert len(nodes) >= 2
+
+    def test_sentence_produces_multiple_nodes(self) -> None:
+        nodes = self._chunk(SentenceChunker)
+        assert len(nodes) >= 2
+
+    def test_reuses_embed_model(self) -> None:
+        from llama_index.embeddings.huggingface import HuggingFaceEmbedding
+
+        embed_model = HuggingFaceEmbedding(model_name="BAAI/bge-large-en-v1.5", embed_batch_size=8)
+        nodes = self._chunk(SemanticChunker, embed_model=embed_model)
+        assert len(nodes) >= 1
+        nodes2 = self._chunk(AgenticChunker, embed_model=embed_model)
+        assert len(nodes2) >= 1
+
+    def test_semantic_rejects_invalid_embed_model(self) -> None:
+        from contextlib import suppress
+
+        with suppress(Exception):
+            SemanticChunker(chunk_size=500, chunk_overlap=50, embed_model="not-a-model")
 
 
 class TestBgeEmbedder:

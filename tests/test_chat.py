@@ -24,6 +24,22 @@ class TestRetriever:
         assert len(results) > 0
         assert results[0].score is not None
 
+    def test_null_retriever_returns_empty(self) -> None:
+        from src.pipeline.retriever import NullRetriever
+
+        retriever = NullRetriever()
+        results = retriever.retrieve(QueryBundle("anything"))
+        assert results == []
+
+    def test_build_retriever_with_top_k_zero_returns_null(self) -> None:
+        config = PipelineConfig()
+        index = build_index(config)
+        retriever = build_retriever(index, top_k=0)
+        from src.pipeline.retriever import NullRetriever
+
+        assert isinstance(retriever, NullRetriever)
+        assert retriever.retrieve(QueryBundle("anything")) == []
+
 
 @pytest.mark.skipif(not _OPENAI_AVAILABLE, reason="OPENAI_API_KEY not set")
 class TestGenerator:
