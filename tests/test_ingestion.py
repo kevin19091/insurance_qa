@@ -76,6 +76,31 @@ class TestBgeEmbedder:
         assert len(result[0].embedding) == config.embedding.dimension
 
 
+class TestFactoryEmbedderDispatch:
+    def test_build_embedder_returns_correct_type(self) -> None:
+        from src.pipeline.embedder import BgeEmbedder, E5Embedder, OpenAIEmbedder
+
+        cases = [
+            ("bge-large", BgeEmbedder),
+            ("text-embedding-3-small", OpenAIEmbedder),
+            ("e5-large", E5Embedder),
+        ]
+        for model, expected_cls in cases:
+            config = PipelineConfig(embedding={"model": model})  # type: ignore[arg-type]
+            embedder = build_embedder(config)
+            assert isinstance(embedder, expected_cls), (
+                f"Expected {expected_cls.__name__} for {model}, got {type(embedder).__name__}"
+            )
+
+    def test_unknown_model_raises(self) -> None:
+        import pytest
+
+        config = PipelineConfig()
+        config.embedding.model = "unknown-model"  # type: ignore[assignment]
+        with pytest.raises(ValueError, match="Unknown embedding model"):
+            build_embedder(config)
+
+
 class TestIngestionPipeline:
     def test_build_index_creates_queryable_index(self) -> None:
         config = PipelineConfig()

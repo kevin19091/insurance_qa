@@ -29,6 +29,12 @@ class Embedder(ABC):
     @abstractmethod
     def embed(self, nodes: list[TextNode]) -> list[TextNode]: ...
 
+    @property
+    @abstractmethod
+    def raw_model(self) -> object:
+        """Return the underlying embedding model for use with VectorStoreIndex."""
+        ...
+
 
 class Retriever(ABC):
     """Retrieve relevant nodes for a query."""

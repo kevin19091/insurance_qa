@@ -8,13 +8,12 @@ from typing import Any
 
 import chromadb
 from llama_index.core import VectorStoreIndex
-from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.vector_stores.chroma import ChromaVectorStore
 
 from src.config import PipelineConfig
 from src.pipeline import Chunker, Embedder, Generator, Parser, Retriever
 from src.pipeline.chunker import AgenticChunker, RecursiveChunker, SemanticChunker, SentenceChunker
-from src.pipeline.embedder import BgeEmbedder
+from src.pipeline.embedder import BgeEmbedder, CohereEmbedder, E5Embedder, OpenAIEmbedder
 from src.pipeline.generator import ClaudeGenerator, GeminiGenerator, OpenAIGenerator
 from src.pipeline.parser import PyMuPDFParser
 from src.pipeline.retriever import IndexRetriever, NullRetriever
@@ -45,21 +44,28 @@ def build_chunker(config: PipelineConfig, embed_model: Any | None = None) -> Chu
 
 
 def build_embedder(config: PipelineConfig) -> Embedder:
-    return BgeEmbedder(
-        model_name=_BGE_MODEL,
-        dimension=config.embedding.dimension,
-    )
+    model = config.embedding.model
+    dimension = config.embedding.dimension
+
+    if model == "bge-large":
+        return BgeEmbedder(model_name=_BGE_MODEL, dimension=dimension)
+    if model == "text-embedding-3-small":
+        return OpenAIEmbedder(model_name=model, dimension=dimension)
+    if model == "cohere-embed-v3":
+        return CohereEmbedder(model_name=model, dimension=dimension)
+    if model == "e5-large":
+        return E5Embedder(model_name=model, dimension=dimension)
+
+    msg = f"Unknown embedding model: {model}"
+    raise ValueError(msg)
 
 
 def build_index(config: PipelineConfig) -> VectorStoreIndex:
     parser = build_parser(config)
+    embedder = build_embedder(config)
+    raw_embed_model = embedder.raw_model
 
-    embed_model = HuggingFaceEmbedding(
-        model_name=_BGE_MODEL,
-        embed_batch_size=8,
-    )
-
-    chunker = build_chunker(config, embed_model=embed_model)
+    chunker = build_chunker(config, embed_model=raw_embed_model)
 
     docs = parser.parse("data/max-life-group-credit-life-secure-policy-document-v1.pdf")
     nodes = chunker.chunk(docs)
@@ -74,7 +80,7 @@ def build_index(config: PipelineConfig) -> VectorStoreIndex:
     return VectorStoreIndex(
         nodes=nodes,
         vector_store=vector_store,
-        embed_model=embed_model,
+        embed_model=raw_embed_model,  # type: ignore[arg-type]
     )
 
 
