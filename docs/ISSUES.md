@@ -26,8 +26,9 @@ Each issue is a thin, demonstrable end-to-end slice. Work sequentially — each 
 | 20 | Execute LLM sweep | AFK | #19 | Run benchmarks comparing GPT-4o-mini, GPT-4o, Claude 3.5 Sonnet, Gemini 2.0 Flash. Save to `benchmarks/M-llm{a,b,c,d}/`. |
 | 21 | LLM comparison report | HITL | #20 | Compare cost, faithfulness, latency across 4 providers. Recommend which for accuracy vs budget. |
 | 22 | Implement remaining embedding models | AFK | #18 | `OpenAIEmbedder` (text-embedding-3-small), `CohereEmbedder` (cohere-embed-v3), `E5Embedder` (e5-large). Wire into factory dispatch via `embedding.model`. Each wraps its LlamaIndex embedding class. |
-| 23 | Execute embedding model sweep | AFK | #22 | Run 4 benchmarks: bge-large, text-embedding-3-small, cohere-embed-v3, e5-large. Save to `benchmarks/M4{a,b,c,d}/`. |
-| 24 | M4 comparison report | HITL | #23 | Compare embedding models on faithfulness, recall, cost, latency.
+| 23 | Execute embedding model sweep | AFK | #22 | Run 3 benchmarks: bge-large, text-embedding-3-small, e5-large. Save to `benchmarks/M4{a,b,d}/`. |
+| 24 | M4 comparison report | HITL | #23 | Compare embedding models on faithfulness, recall, cost, latency. |
+| 25 | Persistent Chroma storage | AFK | #24 | Swap `EphemeralClient` for `PersistentClient` in `factory.py`. Index survives restarts. Delete `data/chroma/` to force rebuild. |
 
 ## Dependency Graph
 
@@ -41,7 +42,7 @@ Each issue is a thin, demonstrable end-to-end slice. Work sequentially — each 
                            │
                            9 ──→ 10 ──→ 13 ──→ 14 ──→ 15 ──→ 16 ──→ 17 ──→ 18 ──→ 19 ──→ 20 ──→ 21
                                                                                         │
-                                                                                        22 ──→ 23 ──→ 24
+                                                                                        22 ──→ 23 ──→ 24 ──→ 25
 
 3 ──→ 12 (can run parallel with 4-8)
 
