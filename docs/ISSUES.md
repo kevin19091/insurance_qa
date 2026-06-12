@@ -22,9 +22,12 @@ Each issue is a thin, demonstrable end-to-end slice. Work sequentially — each 
 | 16 | Implement remaining chunking strategies | AFK | #15 | Add SemanticChunker, SentenceChunker, agentic variant. Wire into factory dispatch via `chunk.strategy`. |
 | 17 | Execute chunking strategy sweep | AFK | #16 | Run 4 benchmarks: recursive, semantic, sentence, agentic. Save to `benchmarks/M3{a,b,c,d}/`. |
 | 18 | M3 comparison report | HITL | #17 | Compare chunking strategies. Recommend which to carry forward. |
-| 19 | LLM provider interface + implementations | AFK | #18 | `ClaudeGenerator` + `GeminiGenerator` implementing `Generator` ABC. Factory dispatch via `config.llm.model`. `LLMConfig` extended with new model literals (`gemini-2.0-flash`, `gemini-1.5-pro`, `claude-3.5-sonnet`, etc.). Designed so adding a new provider = one new class + one factory branch. |
-| 20 | Execute LLM sweep | AFK | #19 | Run benchmarks comparing GPT-4o-mini, GPT-4o, Claude 3.5 Sonnet, Gemini 2.0 Flash. Save to `benchmarks/M4{a,b,c,d}/`. |
-| 21 | LLM comparison report | HITL | #20 | Compare cost, faithfulness, latency across 4 providers. Recommend which for accuracy vs budget.
+| 19 | LLM provider interface + implementations | AFK | #18 | `ClaudeGenerator` + `GeminiGenerator` implementing `Generator` ABC. Factory dispatch via `config.llm.model`. `LLMConfig` extended with new model literals. |
+| 20 | Execute LLM sweep | AFK | #19 | Run benchmarks comparing GPT-4o-mini, GPT-4o, Claude 3.5 Sonnet, Gemini 2.0 Flash. Save to `benchmarks/M-llm{a,b,c,d}/`. |
+| 21 | LLM comparison report | HITL | #20 | Compare cost, faithfulness, latency across 4 providers. Recommend which for accuracy vs budget. |
+| 22 | Implement remaining embedding models | AFK | #18 | `OpenAIEmbedder` (text-embedding-3-small), `CohereEmbedder` (cohere-embed-v3), `E5Embedder` (e5-large). Wire into factory dispatch via `embedding.model`. Each wraps its LlamaIndex embedding class. |
+| 23 | Execute embedding model sweep | AFK | #22 | Run 4 benchmarks: bge-large, text-embedding-3-small, cohere-embed-v3, e5-large. Save to `benchmarks/M4{a,b,c,d}/`. |
+| 24 | M4 comparison report | HITL | #23 | Compare embedding models on faithfulness, recall, cost, latency.
 
 ## Dependency Graph
 
@@ -37,6 +40,8 @@ Each issue is a thin, demonstrable end-to-end slice. Work sequentially — each 
          └──── 5 ──────────┘
                            │
                            9 ──→ 10 ──→ 13 ──→ 14 ──→ 15 ──→ 16 ──→ 17 ──→ 18 ──→ 19 ──→ 20 ──→ 21
+                                                                                        │
+                                                                                        22 ──→ 23 ──→ 24
 
 3 ──→ 12 (can run parallel with 4-8)
 
