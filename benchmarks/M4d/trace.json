@@ -1,0 +1,14 @@
+{
+  "milestone": "M1",
+  "timestamp": "2026-06-12T13:30:35.357913+00:00",
+  "config_path": "benchmarks/M1/config.yaml",
+  "config_override": {
+    "embedding": {
+      "model": "e5-large"
+    }
+  },
+  "seed": 42,
+  "prompt_version": "v1",
+  "duration_seconds": 240.39,
+  "index_node_count": 37
+}
