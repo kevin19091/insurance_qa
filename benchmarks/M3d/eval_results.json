@@ -1,0 +1,245 @@
+{
+  "config_path": "benchmarks/M1/config.yaml",
+  "config": {
+    "chunk": {
+      "strategy": "agentic",
+      "chunk_size": 250,
+      "chunk_overlap": 50
+    },
+    "embedding": {
+      "model": "bge-large",
+      "dimension": 1024
+    },
+    "retrieval": {
+      "mode": "dense",
+      "top_k": 5,
+      "similarity_threshold": null,
+      "sparse_weight": 0.3,
+      "dense_weight": 0.7
+    },
+    "reranker": {
+      "enabled": false,
+      "model": "cohere",
+      "top_n": 5,
+      "max_input_chunks": 20
+    },
+    "query_rewrite": {
+      "enabled": false,
+      "strategy": "hyde"
+    },
+    "llm": {
+      "model": "gpt-4o-mini",
+      "temperature": 0.0,
+      "max_tokens": 1024
+    },
+    "cache": {
+      "enabled": false,
+      "ttl_seconds": 3600,
+      "max_entries": 1000
+    },
+    "seed": 42,
+    "prompt_version": "v1"
+  },
+  "scores": {
+    "faithfulness": 0.7486111111111111,
+    "answer_relevancy": 0.7316938333235259,
+    "context_precision": 0.914305555514735,
+    "context_recall": 0.6166666666666666
+  },
+  "per_question": [
+    {
+      "question": "What's the difference between the Decreasing Cover and Level Cover options for the Death Benefit?",
+      "reference_answer": "Under Option A (Decreasing Cover), the Sum Assured decreases over the Period of Coverage in line with the loan repayment schedule as specified in the Certificate of Insurance. Under Option B (Level Cover), the Sum Assured remains constant throughout the Period of Coverage as chosen by the Master Policyholder or Member and specified in the Certificate of Insurance. The moratorium option is only available with Option A.",
+      "generated_answer": "The difference between the Decreasing Cover and Level Cover options for the Death Benefit is as follows:\n\n- **Decreasing Cover (Option A)**: The Sum Assured payable is the Sum Assured outstanding as per the schedule indicated in the Certificate of Insurance, regardless of the actual loan outstanding at the time of death of the member [Source: Page 9].\n\n- **Level Cover (Option B)**: The context does not provide specific details about the Level Cover option, but it is mentioned as a separate option available to the Master Policyholder [Source: Page 9].\n\nTherefore, while the Decreasing Cover option specifies that the benefit decreases over time according to a schedule, the Level Cover option is not detailed in the provided context.",
+      "contexts": [
+        "Option A - Decreasing Cover \n \n If the Master Policyholder has chosen option \u2013 A as the Death Benefit Option under this Policy, the \nSum Assured payable by Us shall be the Sum Assured outstanding as per the schedule  of Sum Assured \nindicated in the Certificate of Insurance, irrespective of the actual loan outstanding on the date of death \nof such Member.",
+        "Under this Policy, the moratorium period option is available with option A \u2013 decreasing cover as the \nDeath Benefit Option, as set out in Section 3.1.1.",
+        "DETAILS OF POLICY COVERAGE \n \n \nNumber of Members Admitted at the Date of Commencement of Risk /Effective Date of Coverage: \n \nTotal Sum Assured: \n \nTotal Premium: \n \nTotal Service Tax: \n \nDeath Benefit Option Chosen: \ni) \nOption A - Decreasing Cover:  \nWhether moratorium option chosen: \nii) Option B - Level Cover: \n \nDate of Commencement of Risk /Effective Date of Coverage:  \nFor existing Members: \nRiders: \nPremium Mode: Single Premium \nFree Cover Limit (if any):  \nPolicy Term: The Policy continues, until terminated by either of the parties in accordance with Section",
+        "\u201cDeath Benefit Option\u201d means the option chosen by the Master Policyholder, at the time of the \nProposal Form and as specified in the Schedule; \nviii.",
+        "Option B - Level Cover"
+      ],
+      "latency": {
+        "retrieval_latency_ms": 233.6,
+        "generation_latency_ms": 4370.9,
+        "total_latency_ms": 4604.6
+      }
+    },
+    {
+      "question": "If a 68-year-old borrower with Option A (Decreasing Cover) dies during the moratorium period, how much does the nominee receive?",
+      "reference_answer": "The member is eligible for coverage as they are between 15 and 69 years of age at entry. If the moratorium option was chosen (available only with Option A in multiples of 3 months, minimum 3 months), then upon death during the moratorium period and claim approval, the Company shall pay the Sum Assured as specified in the Certificate of Insurance, irrespective of the actual loan outstanding. After the moratorium period expires, the Sum Assured would decrease over the remainder of the Period of Coverage.",
+      "generated_answer": "If a 68-year-old borrower with Option A (Decreasing Cover) dies during the moratorium period, the nominee will receive the Sum Assured as specified in the Certificate of Insurance, irrespective of the actual loan outstanding. This is confirmed by the statement that upon the death of such a Member during the moratorium period, the Sum Assured will be paid upon approval of the claim [Source: Page 10].",
+      "contexts": [
+        "Under this Policy, the moratorium period option is available with option A \u2013 decreasing cover as the \nDeath Benefit Option, as set out in Section 3.1.1.",
+        "Option A - Decreasing Cover \n \n If the Master Policyholder has chosen option \u2013 A as the Death Benefit Option under this Policy, the \nSum Assured payable by Us shall be the Sum Assured outstanding as per the schedule  of Sum Assured \nindicated in the Certificate of Insurance, irrespective of the actual loan outstanding on the date of death \nof such Member.",
+        "Upon death of such a Member \nduring the moratorium period and on approval of the claim by Us, We shall pay the Sum Assured as \nspecified in the Certificate of Insurance, irrespective of the actual loan outstanding.",
+        "Upon the expiry of the moratorium period, the Sum \nAssured will decrease during the remainder of the Period of Coverage.",
+        "Where the Nominee is a minor, the Member is required to appoint an appointee to receive the Death \nBenefit in the event of the Member\u2019s death during the minority of the Nominee."
+      ],
+      "latency": {
+        "retrieval_latency_ms": 328.9,
+        "generation_latency_ms": 2358.3,
+        "total_latency_ms": 2687.2
+      }
+    },
+    {
+      "question": "I'm 68 and applying for a loan. Am I eligible for coverage?",
+      "reference_answer": "Yes, you are eligible if you are a natural person between 15 and 69 years of age on the Date of Commencement of Risk or Entry Date, and will not be more than 70 years of age on the date the Insurance expires. The proposed Period of Coverage must be at least 1 year.",
+      "generated_answer": "Yes, you are eligible for coverage as you are between 15 and 69 years of age on the Date of Commencement of Risk/Effective Date of Coverage, and you will not be more than 70 years of age when the insurance expires [Source: Page 8].",
+      "contexts": [
+        "is between 15 (Fifteen) years and 69 (Sixty Nine) years (both inclusive) of Age on the Date of \nCommencement of Risk /Effective Date of Coverage or the Entry Date and will not be more than \n70 (Seventy) years of Age on the date the Insurance expires; and \niii.",
+        "Provided that nothing in this section shall prevent the insurer from calling for proof of age at any time \nif he is entitled to do so, and no policy shall be deemed to be called in question merely because the \nterms of the policy are adjusted on subsequent proof that the age of the life insured was incorrectly \nstated in the proposal.\u201d",
+        "Declaration of the correct Age of the Member(s) is important for Our underwriting process, before \nissuance of this Policy and/or Certificate of Insurance(s). The Premiums are calculated on the basis of \nthe Age of the Member(s).",
+        "\u201cEligible Member\u201d means the Borrower or Co-Borrower, who has met the eligibility requirements as \nspecified in Section 2.1 of this Policy and the Schedule, to participate in the Insurance under this \nPolicy; \nxi.",
+        "If the Age declared in the Proposal Form and/or Member enrollement \napplication form is found to be incorrect anytime during the Policy Term and/or Period of Coverage at \nthe time of claim, then subject to Section 9.6, We may at Our discretion: \ni. \ncancel the Policy and/or the Certificate of Insurance and pay the Surrender Value; or \nii."
+      ],
+      "latency": {
+        "retrieval_latency_ms": 235.0,
+        "generation_latency_ms": 1995.6,
+        "total_latency_ms": 2230.6
+      }
+    },
+    {
+      "question": "If a member paid a premium of \u20b910,000 and surrenders after 24 months of a 60-month coverage period with Level Cover Sum Assured of \u20b95,00,000, what is the surrender value?",
+      "reference_answer": "Using the surrender value formula: Surrender Value = 70% of Premium paid x (Unexpired Period of Coverage in months / Total Period of Coverage in months) x (Sum Assured on surrender date / Sum Assured on commencement). Unexpired period = 60 - 24 = 36 months. For Level Cover, the Sum Assured ratio is 1. So: 0.70 x \u20b910,000 x (36/60) x 1 = \u20b94,200.",
+      "generated_answer": "To calculate the surrender value based on the provided formula, we can use the following information:\n\n- Premium paid = \u20b910,000\n- Unexpired Period of Coverage = 60 months - 24 months = 36 months\n- Total Period of Coverage = 60 months\n- Sum Assured on the Date of Commencement of Risk = \u20b95,00,000\n- Sum Assured applicable on the date of Surrender = \u20b95,00,000\n\nNow, we can plug these values into the formula for Surrender Value:\n\nSurrender Value = 70% of Premium paid * (Unexpired Period of Coverage in months / Total Period of Coverage in months) * (Sum Assured applicable on the date of Surrender / Sum Assured on the Date of Commencement of Risk)\n\nCalculating each part:\n\n1. 70% of Premium paid = 0.70 * \u20b910,000 = \u20b97,000\n2. Unexpired Period of Coverage / Total Period of Coverage = 36 / 60 = 0.6\n3. Sum Assured applicable on the date of Surrender / Sum Assured on the Date of Commencement of Risk = \u20b95,00,000 / \u20b95,00,000 = 1\n\nNow, substituting these values into the formula:\n\nSurrender Value = \u20b97,000 * 0.6 * 1 = \u20b94,200\n\nTherefore, the surrender value is \u20b94,200.",
+      "contexts": [
+        "Upon receipt of such \nwritten request and provided We have not received a claim request for Death Benefit under Section 3.1 \nfor such Member, We shall pay the Surrender Value to the Member, based on the formula given below:  \n  Surrender Value  = 70% of Premium paid * (Unexpired Period of Coverage in months on the date \nof Surrender^  / Total Period of Coverage in months ) * (Sum Assured applicable on the date of \nSurrender^^  / Sum Assured on the Date of Commencement of Risk /Effective Date of Coverage) \n^  Ignoring fraction of a month \n^^  As per the schedule mentioned in the  Certificate of Insurance  \n3.3.2.",
+        "Upon receipt of a valid surrender request from the Member, the Insurance in respect of such Member \nshall cease and on payment of the Surrender Value as per Section 3.3.1 above, all benefits and rights \nunder this Policy and/or Certificate of Insurance in respect of such Member shall automatically cease.",
+        "3.3.3. Payment of the Surrender Value under this Policy paid to a Member shall constitute a valid discharge of \nOur liability in respect to such Member, under this Policy. 3.4.",
+        "In such an event we may cancel the policy and pay the Surrender Value subject to the \nfraud or misrepresentation being established by Us, in accordance with Section 45 of the Insurance Act.",
+        "In such an event, We \nreserve the right to cancel the Policy and pay the Surrender Value subject to the fraud or \nmisrepresentation being established by Us, in accordance with Section 45 of the Insurance Act."
+      ],
+      "latency": {
+        "retrieval_latency_ms": 242.6,
+        "generation_latency_ms": 7562.3,
+        "total_latency_ms": 7805.0
+      }
+    },
+    {
+      "question": "My spouse passed away \u2014 what documents do I need to submit a claim?",
+      "reference_answer": "You need to submit: (i) claimant's statement in the prescribed form; (ii) original Certificate of Insurance; (iii) original death certificate issued by the local or municipal authority; (iv) identity proof of the Member and the Nominee(s) bearing their photographs and signatures; and (v) any other documents or information required by the Company for assessing and approving the claim request.",
+      "generated_answer": "To submit a claim for the Death Benefit under the policy, you will need to provide the following documents:\n\n1. Claimant\u2019s statement in the prescribed form.\n2. Identity proof of the Member (your spouse) and the Nominee (you) bearing their photographs and signatures.\n3. Any other documents or information required by Max Life Insurance for assessing and approving the claim request.\n\nYou can download the claim request documents from the Max Life Insurance website or obtain them from their branches or offices [Source: Page 11, Page 12].",
+      "contexts": [
+        "For processing a claim request under this Policy, We will require all \nof the following documents: \ni. \nclaimant\u2019s statement in the prescribed form; \nii.",
+        "9.7.4. While processing the claim request for the Death Benefit under this Policy, the Nominee will be \nrequired to produce all the necessary documents to give valid discharge for the payment of the Death \nBenefit secured under this Policy. 9.7.5.",
+        "Any person claiming the Death Benefit under this Policy can download the claim request documents \nfrom Our website www.maxlifeinsurance.com or can obtain the same from Our branches or offices.",
+        "identity proof of the Member and the Nominee(s) bearing their photographs and signatures; and \nv. \nany other documents or information required by Us for assessing and approving the claim request.",
+        "The person named by the Member as the Nominee in the enrollment form for Insurance and whose \nname has been registered and recorded by the Master Policyholder in the Register of Members in \naccordance with Section 39 of the Insurance Act, shall be the person to whom the Death Benefit under \nthis Policy will be paid by Us in the event of death of the Member."
+      ],
+      "latency": {
+        "retrieval_latency_ms": 206.2,
+        "generation_latency_ms": 2761.6,
+        "total_latency_ms": 2967.9
+      }
+    },
+    {
+      "question": "How soon must I notify Max Life after a death?",
+      "reference_answer": "The Master Policyholder must notify Max Life Insurance in writing of the happening of the Insured Event within 30 days from the date of the event. The claim should be registered at the Claims Unit, Max Life Insurance Company Limited, Plot 90A, Sector 18, HUDA, Gurugram 122002, Haryana, India.",
+      "generated_answer": "You must notify Max Life in writing of the happening of the Insured Event, which includes death, within 30 days from the date of the event [Source: Page 11].",
+      "contexts": [
+        "Subject to Sections 9.6 and 10 and this Policy and Insurance remaining in force, the Master \nPolicyholder with respect to any Member must notify Us in writing of the happening of the Insured \nEvent, within 30 (Thirty) days from the date of happening of such an Insured Event.",
+        "Upon death of such a Member \nduring the moratorium period and on approval of the claim by Us, We shall pay the Sum Assured as \nspecified in the Certificate of Insurance, irrespective of the actual loan outstanding.",
+        "4.2. No Death Benefit under this Policy is payable, if the date of death of the Member precedes the Entry \nDate of that Member. 4.3.",
+        "Subject to Sections 3, 5 and 10, the Death Benefit is payable under this Policy only on submission of \nsatisfactory proof of the Member\u2019s death to Us by the Master Policyholder, subject to the Policy and \nInsurance remaining in force.",
+        "In case the Master Policyholder and/or the Member are not satisfied with the decision of the above \noffice, or have not received any response within 15 (fifteen) days, the Master Policyholder and/or the \nMember may contact by way of a written complaint signed by the Master Policyholder/ Member/ \ncomplainant or by the Master Policyholder\u2019s/ Member\u2019s/ complainant\u2019s legal heirs with full details of \nthe complaint and the Master Policyholder\u2019s /Member/complainant\u2019s contact information, to the \nfollowing official for resolution: \nHead, Operation and Delivery,  \nMax Life Insurance Company Limited \nPlot No."
+      ],
+      "latency": {
+        "retrieval_latency_ms": 187.4,
+        "generation_latency_ms": 1218.9,
+        "total_latency_ms": 1406.3
+      }
+    },
+    {
+      "question": "Can I cancel my coverage and get money back?",
+      "reference_answer": "Yes, a Member may at any time request surrender of his Insurance by making a written request through the Master Policyholder or directly to the Company. The Surrender Value is calculated as: 70% of Premium paid multiplied by (Unexpired Period of Coverage in months / Total Period of Coverage in months) multiplied by (Sum Assured applicable on the date of Surrender / Sum Assured on the Date of Commencement of Risk).",
+      "generated_answer": "Yes, you can cancel your coverage and receive a refund of the premiums paid, but this will be after deducting the proportionate risk premium for the period of cover, charges of stamp duty paid, and any expenses incurred on medical examination, if applicable [Source: Page 1]. Additionally, if fraud or misrepresentation is established, the policy may be canceled, and the surrender value may be paid [Source: Page 14]. \n\nThis response is AI-generated and does not constitute legal or insurance advice.",
+      "contexts": [
+        "We will only refund the Premiums received by Us, after \ndeducting the proportionate risk Premium for the period of cover, charges of stamp duty paid and the expenses \nincurred on medical examination of the Member(s), if any.",
+        "We will only refund the \nPremiums received by Us, after deducting the proportionate risk Premium for the period of cover, \ncharges of stamp duty paid and the expenses incurred on medical examination of the Members, if any.",
+        "In such an event we may cancel the policy and pay the Surrender Value subject to the \nfraud or misrepresentation being established by Us, in accordance with Section 45 of the Insurance Act.",
+        "In such an event, We will only refund the Premium received by \nUs (inclusive of extra premiums and excluding taxes, if any) in respect of such Member, without \ninterest and after deducting the proportional expenses incurred by Us for the grant of Insurance.",
+        "In such an event, We \nreserve the right to cancel the Policy and pay the Surrender Value subject to the fraud or \nmisrepresentation being established by Us, in accordance with Section 45 of the Insurance Act."
+      ],
+      "latency": {
+        "retrieval_latency_ms": 193.8,
+        "generation_latency_ms": 3844.9,
+        "total_latency_ms": 4038.7
+      }
+    },
+    {
+      "question": "Under what circumstances can Max Life Insurance repudiate or cancel a claim or policy?",
+      "reference_answer": "The Company can repudiate a claim or cancel the policy in several circumstances: (1) if the age declared is found to be incorrect, the Company may cancel and pay Surrender Value or adjust benefits (Section 9.5); (2) concealment, non-disclosure, misrepresentation, or fraud renders the policy voidable, and the Company may cancel and pay Surrender Value once fraud is established under Section 45 of the Insurance Act (Section 9.6.2); (3) if policy conditions are contravened or untrue averments are made, the Insurance ceases and the policy may be cancelled (Section 9.6.3); (4) if a fraudulent claim is made, the policy becomes void (Section 9.10); (5) the Company may also scrutinize documents and investigate the cause of death to repudiate partially or completely (Section 5.3).",
+      "generated_answer": "Max Life Insurance can repudiate or cancel a claim or policy under the following circumstances:\n\n1. If the Master Policyholder, Members, or anyone acting on their behalf makes or advances a claim knowing it to be false or fraudulent, the policy shall be void, and they reserve the right to cancel the policy by paying the Surrender Value, subject to the fraud being established by them [Source: Page 15].\n\n2. In cases of fraud or misrepresentation, the policy may be canceled, and the Surrender Value paid, provided that the fraud or misrepresentation is established by them [Source: Page 14].\n\n3. Any concealment, non-disclosure, misrepresentation, or fraud can render the policy and/or the Certificate of Insurance liable for cancellation and/or voidable at their option [Source: Page 14]. \n\nThese conditions are in accordance with Section 45 of the Insurance Act.",
+      "contexts": [
+        "If the Master Policyholder or the Members or anyone acting at the Master Policyholder\u2019s or the \nMember\u2019s direction or with the Master Policyholder\u2019s or the Member\u2019s knowledge, or any Beneficiary \nunder or in respect of this Policy makes or advances any claim knowing it to be false or fraudulent in \nany way, then this Policy shall be void and We reserve the right to cancel the Policy by paying the \nSurrender Value subject to the fraud being established by Us, in accordance with Section 45 of the \nInsurance Act.",
+        "In such an event we may cancel the policy and pay the Surrender Value subject to the \nfraud or misrepresentation being established by Us, in accordance with Section 45 of the Insurance Act.",
+        "In such an event, We \nreserve the right to cancel the Policy and pay the Surrender Value subject to the fraud or \nmisrepresentation being established by Us, in accordance with Section 45 of the Insurance Act.",
+        "In case the Master Policyholder/Member/ complainant are not satisfied with Our decision, or have not \nreceived any reply from Us within a period of 1 (One) month, or rejection of complaint by Us,   the Master \nPolicyholder/ Member or his legal heirs or nominee, or assignee may approach the Insurance Ombudsman \nat the address mentioned in Annexure A or at the IRDA website www.irda.gov.in, if the grievance \npertains to: \n11.6.1. delay in settlement of a claim; \n11.6.2. any partial or total repudiation of a claim by Us;  \n11.6.3. any dispute with regard to the Premium paid or payable in terms of the Policy; or \n11.6.4. any misrepresentation of policy terms and conditions at any time in the policy document or policy \ncontract;  \n11.6.5. any dispute on the legal construction of the Policy in so far as such dispute relate to a claim;  \n11.6.6. policy servicing by Us, Our agents or intermediaries; \n11.6.7. issuance of insurance policy, which is not in conformity with the proposal form submitted by You; \n11.6.8. non issuance of any insurance document after receipt of the Premium.",
+        "Any concealment, non-disclosure, misrepresentation, or fraud shall render the Policy and/or the \nCertificate of Insurance liable for cancellation and/ or voidable at Our option."
+      ],
+      "latency": {
+        "retrieval_latency_ms": 205.2,
+        "generation_latency_ms": 6122.8,
+        "total_latency_ms": 6328.0
+      }
+    },
+    {
+      "question": "What happens if the group policy is cancelled?",
+      "reference_answer": "Either the Master Policyholder or the Company may terminate this Policy by giving 90 days prior written notice to the other party. Upon termination, each Member's coverage continues as an individual policy until the date of expiration of the Period of Coverage. No new enrollment forms will be accepted from the date of termination.",
+      "generated_answer": "If the group policy is cancelled, the coverage for each Member under the Insurance will continue as an individual policy until the date of the expiration of the Period of Coverage [Source: Page 16].",
+      "contexts": [
+        "Where free look cancellation is exercised by You, the Policy shall terminate forthwith and all rights, benefits \nand interests under the Policy shall cease immediately.",
+        "In the event of such termination, each Member\u2019s coverage \nunder the Insurance shall continue as an individual policy until the date of the expiration of the Period \nof Coverage.",
+        "Where free look cancellation is exercised by Member, Certificate of Insurance shall terminate forthwith and \nall rights, benefits and interests shall cease immediately.",
+        "If Our performance or any of Our obligations are in any way prevented or hindered as a consequence \nof any act of God or State, strike, lock out, legislation or restriction by any government or any other \nauthority or any other circumstances beyond Our anticipation or control, the performance of this Policy \nshall be wholly or partially suspended during the continuance of such force majeure.",
+        "If the Master Policyholder or the Members or anyone acting at the Master Policyholder\u2019s or the \nMember\u2019s direction or with the Master Policyholder\u2019s or the Member\u2019s knowledge, or any Beneficiary \nunder or in respect of this Policy makes or advances any claim knowing it to be false or fraudulent in \nany way, then this Policy shall be void and We reserve the right to cancel the Policy by paying the \nSurrender Value subject to the fraud being established by Us, in accordance with Section 45 of the \nInsurance Act."
+      ],
+      "latency": {
+        "retrieval_latency_ms": 201.4,
+        "generation_latency_ms": 1807.6,
+        "total_latency_ms": 2009.0
+      }
+    },
+    {
+      "question": "Do I need a medical exam to get coverage?",
+      "reference_answer": "Not necessarily. The Free Cover Limit is the Sum Assured amount up to which Insurance cover can be allowed based on simple insurability conditions without requiring any evidence of health. If the Sum Assured exceeds the Free Cover Limit, health evidence may be required.",
+      "generated_answer": "Yes, a medical examination may be required for all Eligible Members whose total proposed Sum Assured, combined with amounts already insured or proposed to be insured under other policies, exceeds the Free Cover Limit as determined by the insurer [Source: Page 9].",
+      "contexts": [
+        "submission of reports based on the medical examination, as determined by Us, shall be required for \nall Eligible Members whose total proposed Sum Assured, combined with amounts already insured \nor proposed to be insured under other policies issued by Us, exceeds the Free Cover Limit, as \ndetermined by Us and as specified in the Schedule.",
+        "9.7.4. While processing the claim request for the Death Benefit under this Policy, the Nominee will be \nrequired to produce all the necessary documents to give valid discharge for the payment of the Death \nBenefit secured under this Policy. 9.7.5.",
+        "During the Period of Coverage, a Member may at any time, request for the surrender of his Insurance \nby making a written request through the Master Policyholder or directly to Us.",
+        "\u201cPeriod of Coverage\u201d means the period specified in the Certificate of Insurance, during which the \nInsurance on the life of a Member continues under this Policy; \nxxi.",
+        "For processing a claim request under this Policy, We will require all \nof the following documents: \ni. \nclaimant\u2019s statement in the prescribed form; \nii."
+      ],
+      "latency": {
+        "retrieval_latency_ms": 189.4,
+        "generation_latency_ms": 2006.7,
+        "total_latency_ms": 2196.1
+      }
+    }
+  ],
+  "latency": {
+    "retrieval": {
+      "avg_ms": 222.3,
+      "min_ms": 187.4,
+      "max_ms": 328.9,
+      "p50_ms": 206.2,
+      "p95_ms": 328.9
+    },
+    "generation": {
+      "avg_ms": 3405.0,
+      "min_ms": 1218.9,
+      "max_ms": 7562.3,
+      "p50_ms": 2761.6,
+      "p95_ms": 7562.3
+    },
+    "total": {
+      "avg_ms": 3627.3,
+      "min_ms": 1406.3,
+      "max_ms": 7805.0,
+      "p50_ms": 2967.9,
+      "p95_ms": 7805.0
+    },
+    "ragas_eval_seconds": 24.62
+  }
+}

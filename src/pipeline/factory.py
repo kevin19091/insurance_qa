@@ -4,6 +4,8 @@ Each method returns an instance of the corresponding interface.
 Swapping strategies = changing the config → factory returns a different implementation.
 """
 
+from typing import Any
+
 import chromadb
 from llama_index.core import VectorStoreIndex
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
@@ -25,17 +27,19 @@ def build_parser(config: PipelineConfig) -> Parser:
     return PyMuPDFParser()
 
 
-def build_chunker(config: PipelineConfig) -> Chunker:
+def build_chunker(config: PipelineConfig, embed_model: Any | None = None) -> Chunker:
     strategy = config.chunk.strategy
-    kw = dict(chunk_size=config.chunk.chunk_size, chunk_overlap=config.chunk.chunk_overlap)
+    kw: dict[str, Any] = dict(
+        chunk_size=config.chunk.chunk_size, chunk_overlap=config.chunk.chunk_overlap
+    )
     if strategy == "recursive":
         return RecursiveChunker(**kw)
     if strategy == "sentence":
         return SentenceChunker(**kw)
     if strategy == "semantic":
-        return SemanticChunker(**kw)
+        return SemanticChunker(**kw, embed_model=embed_model)
     if strategy == "agentic":
-        return AgenticChunker(**kw)
+        return AgenticChunker(**kw, embed_model=embed_model)
     msg = f"Unknown chunk strategy: {strategy}"
     raise ValueError(msg)
 
@@ -49,15 +53,16 @@ def build_embedder(config: PipelineConfig) -> Embedder:
 
 def build_index(config: PipelineConfig) -> VectorStoreIndex:
     parser = build_parser(config)
-    chunker = build_chunker(config)
-
-    docs = parser.parse("data/max-life-group-credit-life-secure-policy-document-v1.pdf")
-    nodes = chunker.chunk(docs)
 
     embed_model = HuggingFaceEmbedding(
         model_name=_BGE_MODEL,
         embed_batch_size=8,
     )
+
+    chunker = build_chunker(config, embed_model=embed_model)
+
+    docs = parser.parse("data/max-life-group-credit-life-secure-policy-document-v1.pdf")
+    nodes = chunker.chunk(docs)
 
     chroma_client = chromadb.EphemeralClient()
     for col in chroma_client.list_collections():

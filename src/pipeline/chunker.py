@@ -1,8 +1,7 @@
 """Chunking strategy implementations."""
 
-from typing import cast
+from typing import Any, cast
 
-from llama_index.core.embeddings import resolve_embed_model
 from llama_index.core.node_parser import (
     SemanticDoubleMergingSplitterNodeParser,
     SemanticSplitterNodeParser,
@@ -42,12 +41,21 @@ class SentenceChunker(ChunkerABC):
 
 
 class SemanticChunker(ChunkerABC):
-    def __init__(self, chunk_size: int, chunk_overlap: int) -> None:
-        embed_model = resolve_embed_model("local:BAAI/bge-large-en-v1.5")
+    def __init__(
+        self, chunk_size: int, chunk_overlap: int, embed_model: Any = None
+    ) -> None:
+        if embed_model is None:
+            from llama_index.core.embeddings import resolve_embed_model
+
+            embed_model = resolve_embed_model("local:BAAI/bge-large-en-v1.5")
+
+        from llama_index.core.node_parser import SentenceSplitter as _SentenceSplitter
+
         self._splitter = SemanticSplitterNodeParser(
             embed_model=embed_model,
             buffer_size=chunk_size,
             breakpoint_percentile_threshold=95,
+            sentence_splitter=_SentenceSplitter().split_text,
         )
 
     @observe(as_type="span")
@@ -57,8 +65,13 @@ class SemanticChunker(ChunkerABC):
 
 
 class AgenticChunker(ChunkerABC):
-    def __init__(self, chunk_size: int, chunk_overlap: int) -> None:
-        embed_model = resolve_embed_model("local:BAAI/bge-large-en-v1.5")
+    def __init__(
+        self, chunk_size: int, chunk_overlap: int, embed_model: Any = None
+    ) -> None:
+        if embed_model is None:
+            from llama_index.core.embeddings import resolve_embed_model
+
+            embed_model = resolve_embed_model("local:BAAI/bge-large-en-v1.5")
         self._splitter = SemanticDoubleMergingSplitterNodeParser(
             embed_model=embed_model,
             max_chunk_size=chunk_size,
