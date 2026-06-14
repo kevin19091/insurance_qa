@@ -14,6 +14,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+import chromadb
+
 from dotenv import load_dotenv
 
 from src.config import PipelineConfig
@@ -100,6 +102,7 @@ def run_benchmark(
     milestone: str,
     output_dir: Path,
     skip_eval: bool = False,
+    rebuild: bool = False,
     overrides: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     start_time = time.time()
@@ -117,8 +120,10 @@ def run_benchmark(
     output_dir.mkdir(parents=True, exist_ok=True)
 
     print(f"Building index for {milestone}...")
-    index = build_index(config)
-    node_count = len(index.index_struct.nodes_dict) if hasattr(index, "index_struct") else 0
+    index = build_index(config, force_rebuild=rebuild)
+    chroma_client = chromadb.PersistentClient(path=config.storage.chroma_path)
+    col = chroma_client.get_or_create_collection("insurance_policy")
+    node_count = col.count()
     print(f"Index built: {node_count} nodes")
 
     trace = {
@@ -126,6 +131,7 @@ def run_benchmark(
         "timestamp": datetime.now(timezone.utc).isoformat(),  # noqa: UP017
         "config_path": str(config_path),
         "config_override": applied_overrides if applied_overrides else None,
+        "rebuild": rebuild,
         "seed": config.seed,
         "prompt_version": config.prompt_version,
         "duration_seconds": 0.0,
@@ -184,6 +190,11 @@ def main() -> None:
         help="Skip eval step (ingest only)",
     )
     parser.add_argument(
+        "--rebuild",
+        action="store_true",
+        help="Force re-ingestion even if index exists",
+    )
+    parser.add_argument(
         "--override",
         action="append",
         default=[],
@@ -196,7 +207,7 @@ def main() -> None:
     output_dir = Path(args.output_dir) if args.output_dir else Path("benchmarks") / args.milestone
 
     artifact = run_benchmark(
-        args.milestone, output_dir, skip_eval=args.skip_eval, overrides=overrides
+        args.milestone, output_dir, skip_eval=args.skip_eval, rebuild=args.rebuild, overrides=overrides
     )
 
     print("\n=== Benchmark Summary ===")

@@ -1,6 +1,9 @@
 """Tests for ingestion pipeline (chunk, embed, store)."""
 
+from pathlib import Path
 from typing import Any, cast
+
+import pytest
 
 from llama_index.core.schema import Document, TextNode
 
@@ -99,6 +102,36 @@ class TestFactoryEmbedderDispatch:
         config.embedding.model = "unknown-model"  # type: ignore[assignment]
         with pytest.raises(ValueError, match="Unknown embedding model"):
             build_embedder(config)
+
+
+class TestPersistentChroma:
+    @pytest.mark.slow
+    def test_first_call_creates_sqlite_db(self, tmp_path: Path) -> None:
+        chroma_path = tmp_path / "chroma"
+        config = PipelineConfig(storage={"chroma_path": str(chroma_path)})  # type: ignore[arg-type]
+        build_index(config)
+        assert chroma_path.exists()
+        assert (chroma_path / "chroma.sqlite3").exists()
+
+    @pytest.mark.slow
+    def test_second_call_skips_reingestion(self, tmp_path: Path) -> None:
+        chroma_path = tmp_path / "chroma"
+        config = PipelineConfig(storage={"chroma_path": str(chroma_path)})  # type: ignore[arg-type]
+        build_index(config)
+        mtime1 = (chroma_path / "chroma.sqlite3").stat().st_mtime
+        build_index(config)
+        mtime2 = (chroma_path / "chroma.sqlite3").stat().st_mtime
+        assert mtime1 == mtime2, "Second call should NOT re-create the database"
+
+    @pytest.mark.slow
+    def test_force_rebuild_recreates_index(self, tmp_path: Path) -> None:
+        chroma_path = tmp_path / "chroma"
+        config = PipelineConfig(storage={"chroma_path": str(chroma_path)})  # type: ignore[arg-type]
+        build_index(config)
+        mtime1 = (chroma_path / "chroma.sqlite3").stat().st_mtime
+        build_index(config, force_rebuild=True)
+        mtime2 = (chroma_path / "chroma.sqlite3").stat().st_mtime
+        assert mtime2 > mtime1, "force_rebuild should re-create the database"
 
 
 class TestIngestionPipeline:

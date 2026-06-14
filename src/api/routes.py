@@ -18,7 +18,10 @@ router = APIRouter(prefix="/api")
 @router.get("/health")
 async def health(request: Request) -> dict[str, str | int]:
     index = getattr(request.app.state, "index", None)
-    node_count = len(index.index_struct.nodes_dict) if index else 0
+    if index is None:
+        return {"status": "ok", "node_count": 0}
+    col = index.vector_store._collection
+    node_count = col.count()
     return {"status": "ok", "node_count": node_count}
 
 

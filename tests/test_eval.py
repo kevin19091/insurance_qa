@@ -35,7 +35,7 @@ class TestRunEvalIntegration:
     def test_run_eval_returns_expected_shape(self) -> None:
         from src.eval import run_eval
 
-        config_path = Path("benchmarks/M0/config.yaml")
+        config_path = Path("benchmarks/M1/config.yaml")
         output = run_eval(config_path)
 
         assert "config_path" in output
@@ -54,7 +54,7 @@ class TestRunEvalIntegration:
     def test_scores_are_float_between_zero_and_one(self) -> None:
         from src.eval import run_eval
 
-        config_path = Path("benchmarks/M0/config.yaml")
+        config_path = Path("benchmarks/M1/config.yaml")
         output = run_eval(config_path)
 
         for metric, score in output["scores"].items():

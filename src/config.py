@@ -59,6 +59,10 @@ class LLMConfig(BaseModel):
     max_tokens: int = 1024
 
 
+class StorageConfig(BaseModel):
+    chroma_path: str = "data/chroma"
+
+
 class CacheConfig(BaseModel):
     enabled: bool = False
     ttl_seconds: int = 3600
@@ -72,6 +76,7 @@ class PipelineConfig(BaseModel):
     reranker: RerankerConfig = RerankerConfig()
     query_rewrite: QueryRewriteConfig = QueryRewriteConfig()
     llm: LLMConfig = LLMConfig()
+    storage: StorageConfig = StorageConfig()
     cache: CacheConfig = CacheConfig()
     seed: int = 42
     prompt_version: str = "v1"

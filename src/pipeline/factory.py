@@ -7,7 +7,7 @@ Swapping strategies = changing the config → factory returns a different implem
 from typing import Any
 
 import chromadb
-from llama_index.core import VectorStoreIndex
+from llama_index.core import StorageContext, VectorStoreIndex
 from llama_index.vector_stores.chroma import ChromaVectorStore
 
 from src.config import PipelineConfig
@@ -60,27 +60,43 @@ def build_embedder(config: PipelineConfig) -> Embedder:
     raise ValueError(msg)
 
 
-def build_index(config: PipelineConfig) -> VectorStoreIndex:
-    parser = build_parser(config)
-    embedder = build_embedder(config)
-    raw_embed_model = embedder.raw_model
+def build_index(config: PipelineConfig, force_rebuild: bool = False) -> VectorStoreIndex:
+    collection_name = "insurance_policy"
 
-    chunker = build_chunker(config, embed_model=raw_embed_model)
+    chroma_client = chromadb.PersistentClient(path=config.storage.chroma_path)
 
-    docs = parser.parse("data/max-life-group-credit-life-secure-policy-document-v1.pdf")
-    nodes = chunker.chunk(docs)
+    existing_collections = [c.name for c in chroma_client.list_collections()]
+    collection_exists = collection_name in existing_collections
 
-    chroma_client = chromadb.EphemeralClient()
-    for col in chroma_client.list_collections():
-        if col.name == "insurance_policy":
-            chroma_client.delete_collection("insurance_policy")
-    chroma_collection = chroma_client.create_collection("insurance_policy")
+    if not collection_exists or force_rebuild:
+        if force_rebuild and collection_exists:
+            chroma_client.delete_collection(collection_name)
+
+        embedder = build_embedder(config)
+        raw_embed_model = embedder.raw_model
+
+        parser = build_parser(config)
+        chunker = build_chunker(config, embed_model=raw_embed_model)
+
+        docs = parser.parse("data/max-life-group-credit-life-secure-policy-document-v1.pdf")
+        nodes = chunker.chunk(docs)
+
+        chroma_collection = chroma_client.create_collection(collection_name)
+        vector_store = ChromaVectorStore(chroma_collection=chroma_collection)
+        storage_context = StorageContext.from_defaults(vector_store=vector_store)
+
+        return VectorStoreIndex(
+            nodes=nodes,
+            storage_context=storage_context,
+            embed_model=raw_embed_model,  # type: ignore[arg-type]
+        )
+
+    chroma_collection = chroma_client.get_collection(collection_name)
     vector_store = ChromaVectorStore(chroma_collection=chroma_collection)
-
-    return VectorStoreIndex(
-        nodes=nodes,
+    embedder = build_embedder(config)
+    return VectorStoreIndex.from_vector_store(
         vector_store=vector_store,
-        embed_model=raw_embed_model,  # type: ignore[arg-type]
+        embed_model=embedder.raw_model,  # type: ignore[arg-type]
     )
 
 

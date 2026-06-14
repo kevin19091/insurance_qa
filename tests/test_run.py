@@ -123,3 +123,13 @@ class TestRunBenchmark:
 
         artifact = run_benchmark("M0", tmp_path, skip_eval=True)
         assert artifact["trace"]["duration_seconds"] > 0
+
+
+class TestRebuildFlag:
+    @pytest.mark.slow
+    def test_rebuild_returns_same_node_count(self, tmp_path: Path) -> None:
+        from src.run import run_benchmark
+
+        first = run_benchmark("M0", tmp_path / "no_rebuild", skip_eval=True)
+        second = run_benchmark("M0", tmp_path / "with_rebuild", skip_eval=True, rebuild=True)
+        assert second["trace"]["index_node_count"] == first["trace"]["index_node_count"]

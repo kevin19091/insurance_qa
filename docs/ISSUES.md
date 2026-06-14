@@ -28,7 +28,9 @@ Each issue is a thin, demonstrable end-to-end slice. Work sequentially — each 
 | 22 | Implement remaining embedding models | AFK | #18 | `OpenAIEmbedder` (text-embedding-3-small), `CohereEmbedder` (cohere-embed-v3), `E5Embedder` (e5-large). Wire into factory dispatch via `embedding.model`. Each wraps its LlamaIndex embedding class. |
 | 23 | Execute embedding model sweep | AFK | #22 | Run 3 benchmarks: bge-large, text-embedding-3-small, e5-large. Save to `benchmarks/M4{a,b,d}/`. |
 | 24 | M4 comparison report | HITL | #23 | Compare embedding models on faithfulness, recall, cost, latency. |
-| 25 | Persistent Chroma storage | AFK | #24 | Swap `EphemeralClient` for `PersistentClient` in `factory.py`. Index survives restarts. Delete `data/chroma/` to force rebuild. |
+| 25 | Persistent Chroma + rebuild flag | AFK | #24 | `StorageConfig` with `chroma_path`, `PersistentClient` in factory, lazy-load if collection exists, `--rebuild` CLI flag. |
+| 26 | API server loads persisted index | AFK | #25 | `main.py` lifespan uses `build_index(config, force_rebuild=False)` instead of re-ingesting on startup. |
+| 27 | Chroma inspect CLI | AFK | #25 | `python -m src.chroma_inspect` dumps all raw chunk text + metadata from the persisted DB. |
 
 ## Dependency Graph
 
@@ -42,7 +44,9 @@ Each issue is a thin, demonstrable end-to-end slice. Work sequentially — each 
                            │
                            9 ──→ 10 ──→ 13 ──→ 14 ──→ 15 ──→ 16 ──→ 17 ──→ 18 ──→ 19 ──→ 20 ──→ 21
                                                                                         │
-                                                                                        22 ──→ 23 ──→ 24 ──→ 25
+                                                                                        22 ──→ 23 ──→ 24 ──→ 25 ──→ 26
+                                                                                                              │
+                                                                                                              27
 
 3 ──→ 12 (can run parallel with 4-8)
 

@@ -18,7 +18,7 @@ load_dotenv()
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
     get_langfuse()
-    config = PipelineConfig.from_yaml(Path("benchmarks/M0/config.yaml"))
+    config = PipelineConfig.from_yaml(Path("benchmarks/M1/config.yaml"))
     app.state.config = config
     app.state.index = build_index(config)
     app.state.cancel_events = []

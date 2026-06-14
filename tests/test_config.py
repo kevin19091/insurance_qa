@@ -14,6 +14,7 @@ from src.config import (
     QueryRewriteConfig,
     RerankerConfig,
     RetrievalConfig,
+    StorageConfig,
 )
 from src.pipeline import Parser
 from src.pipeline.factory import build_parser
@@ -28,6 +29,7 @@ class TestPipelineConfig:
         assert config.reranker == RerankerConfig()
         assert config.query_rewrite == QueryRewriteConfig()
         assert config.llm == LLMConfig()
+        assert config.storage == StorageConfig()
         assert config.cache == CacheConfig()
         assert config.seed == 42
         assert config.prompt_version == "v1"
@@ -42,6 +44,7 @@ class TestPipelineConfig:
         assert config.reranker.enabled is False
         assert config.query_rewrite.enabled is False
         assert config.llm == LLMConfig()
+        assert config.storage == StorageConfig()
         assert config.cache.enabled is False
         assert config.seed == 42
         assert config.prompt_version == "v1"
@@ -49,6 +52,17 @@ class TestPipelineConfig:
     def test_invalid_strategy_raises(self) -> None:
         with pytest.raises(ValidationError):
             ChunkConfig(strategy="invalid-strategy")  # type: ignore[arg-type]
+
+
+class TestStorageConfig:
+    def test_default_path(self) -> None:
+        assert StorageConfig().chroma_path == "data/chroma"
+
+    def test_configured_in_pipeline_config(self) -> None:
+        config = PipelineConfig()
+        assert config.storage.chroma_path == "data/chroma"
+        config2 = PipelineConfig(storage={"chroma_path": "/tmp/test-chroma"})  # type: ignore[arg-type]
+        assert config2.storage.chroma_path == "/tmp/test-chroma"
 
 
 class TestFactory:
