@@ -63,7 +63,11 @@ class Generator(ABC):
 
 
 class QueryRewriter(ABC):
-    """Rewrite a user query to improve retrieval quality."""
+    """Rewrite a user query to improve retrieval quality.
+
+    Returns a list of rewritten queries. Most strategies return one element.
+    Multi-query returns multiple variants.
+    """
 
     @abstractmethod
-    def rewrite(self, query: str) -> str: ...
+    def rewrite(self, query: str) -> list[str]: ...

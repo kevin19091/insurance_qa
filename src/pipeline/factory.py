@@ -11,12 +11,13 @@ from llama_index.core import StorageContext, VectorStoreIndex
 from llama_index.vector_stores.chroma import ChromaVectorStore
 
 from src.config import PipelineConfig
-from src.pipeline import Chunker, Embedder, Generator, Parser, Retriever
+from src.pipeline import Chunker, Embedder, Generator, Parser, QueryRewriter, Retriever
 from src.pipeline.chunker import AgenticChunker, RecursiveChunker, SemanticChunker, SentenceChunker
 from src.pipeline.embedder import BgeEmbedder, CohereEmbedder, E5Embedder, OpenAIEmbedder
 from src.pipeline.generator import ClaudeGenerator, GeminiGenerator, OpenAIGenerator
 from src.pipeline.parser import PyMuPDFParser
 from src.pipeline.retriever import IndexRetriever, NullRetriever
+from src.pipeline.rewriter import NullQueryRewriter
 
 # BGE-large-en-v1.5 (1024-dim, English)
 _BGE_MODEL = "BAAI/bge-large-en-v1.5"
@@ -118,3 +119,10 @@ def build_retriever(index: VectorStoreIndex, top_k: int) -> Retriever:
     if top_k == 0:
         return NullRetriever()
     return IndexRetriever(index=index, top_k=top_k)
+
+
+def build_rewriter(config: PipelineConfig, generator: Generator | None = None) -> QueryRewriter:
+    if not config.query_rewrite.enabled:
+        return NullQueryRewriter()
+    msg = f"Unknown query rewrite strategy: {config.query_rewrite.strategy}"
+    raise ValueError(msg)
