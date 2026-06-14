@@ -68,6 +68,53 @@ class NullRetriever(RetrieverABC):
         return []
 
 
+class HybridRetriever(RetrieverABC):
+    """Fuse dense and sparse retrieval with weighted reciprocal rank fusion."""
+
+    _RRF_K: float = 60.0
+
+    def __init__(
+        self,
+        dense_retriever: RetrieverABC,
+        sparse_retriever: RetrieverABC,
+        top_k: int = 5,
+        dense_weight: float = 0.7,
+        sparse_weight: float = 0.3,
+    ) -> None:
+        self._dense = dense_retriever
+        self._sparse = sparse_retriever
+        self._top_k = top_k
+        self._dense_weight = dense_weight
+        self._sparse_weight = sparse_weight
+
+    @observe(as_type="retriever")
+    def retrieve(self, query: QueryBundle) -> list[NodeWithScore]:
+        dense_nodes = self._dense.retrieve(query)
+        sparse_nodes = self._sparse.retrieve(query)
+
+        rrf_scores: dict[str, float] = {}
+        node_map: dict[str, NodeWithScore] = {}
+
+        for rank, n in enumerate(dense_nodes):
+            nid = n.node.node_id
+            rrf_scores[nid] = rrf_scores.get(nid, 0.0) + self._dense_weight / (self._RRF_K + rank)
+            node_map[nid] = n
+
+        for rank, n in enumerate(sparse_nodes):
+            nid = n.node.node_id
+            rrf_scores[nid] = rrf_scores.get(nid, 0.0) + self._sparse_weight / (self._RRF_K + rank)
+            node_map[nid] = n
+
+        sorted_ids = sorted(rrf_scores.keys(), key=lambda nid: rrf_scores[nid], reverse=True)
+        top_ids = sorted_ids[: self._top_k]
+        max_score = max(rrf_scores[nid] for nid in top_ids) if top_ids else 1.0
+
+        return [
+            NodeWithScore(node=node_map[nid].node, score=rrf_scores[nid] / max_score)
+            for nid in top_ids
+        ]
+
+
 def retrieve_with_rewriting(
     retriever: RetrieverABC,
     rewriter: QueryRewriter,
