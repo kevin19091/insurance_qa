@@ -1,0 +1,34 @@
+# M6c — Hybrid retrieval (dense + sparse fusion)
+
+chunk:
+  strategy: "recursive"
+  chunk_size: 500
+  chunk_overlap: 50
+
+embedding:
+  model: "bge-large"
+  dimension: 1024
+
+retrieval:
+  mode: "hybrid"
+  top_k: 5
+  dense_weight: 0.7
+  sparse_weight: 0.3
+
+reranker:
+  enabled: false
+
+query_rewrite:
+  enabled: false
+  strategy: "hyde"
+
+llm:
+  model: "gpt-4o-mini"
+  temperature: 0.0
+  max_tokens: 1024
+
+cache:
+  enabled: false
+
+seed: 42
+prompt_version: "v1"

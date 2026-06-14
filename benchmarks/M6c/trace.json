@@ -1,0 +1,11 @@
+{
+  "milestone": "M6c",
+  "timestamp": "2026-06-14T18:45:26.523468+00:00",
+  "config_path": "benchmarks/M6c/config.yaml",
+  "config_override": null,
+  "rebuild": false,
+  "seed": 42,
+  "prompt_version": "v1",
+  "duration_seconds": 81.52,
+  "index_node_count": 37
+}
