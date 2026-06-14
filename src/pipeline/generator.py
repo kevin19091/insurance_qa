@@ -67,6 +67,10 @@ class OpenAIGenerator(GeneratorABC):
         self._total_completion_tokens = 0
 
     @property
+    def llm(self) -> object:
+        return self._llm
+
+    @property
     def usage(self) -> dict[str, int]:
         return {
             "prompt_tokens": self._total_prompt_tokens,
@@ -100,6 +104,10 @@ class ClaudeGenerator(GeneratorABC):
         self._total_completion_tokens = 0
 
     @property
+    def llm(self) -> object:
+        return self._llm
+
+    @property
     def usage(self) -> dict[str, int]:
         return {
             "prompt_tokens": self._total_prompt_tokens,
@@ -131,6 +139,10 @@ class GeminiGenerator(GeneratorABC):
         self._llm = GoogleGenAI(model=model, temperature=temperature, max_tokens=max_tokens)
         self._total_prompt_tokens = 0
         self._total_completion_tokens = 0
+
+    @property
+    def llm(self) -> object:
+        return self._llm
 
     @property
     def usage(self) -> dict[str, int]:

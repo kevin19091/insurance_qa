@@ -17,7 +17,7 @@ from src.pipeline.embedder import BgeEmbedder, CohereEmbedder, E5Embedder, OpenA
 from src.pipeline.generator import ClaudeGenerator, GeminiGenerator, OpenAIGenerator
 from src.pipeline.parser import PyMuPDFParser
 from src.pipeline.retriever import IndexRetriever, NullRetriever
-from src.pipeline.rewriter import NullQueryRewriter
+from src.pipeline.rewriter import HyDEQueryRewriter, MultiQueryRewriter, NullQueryRewriter, StepBackRewriter
 
 # BGE-large-en-v1.5 (1024-dim, English)
 _BGE_MODEL = "BAAI/bge-large-en-v1.5"
@@ -124,5 +124,18 @@ def build_retriever(index: VectorStoreIndex, top_k: int) -> Retriever:
 def build_rewriter(config: PipelineConfig, generator: Generator | None = None) -> QueryRewriter:
     if not config.query_rewrite.enabled:
         return NullQueryRewriter()
-    msg = f"Unknown query rewrite strategy: {config.query_rewrite.strategy}"
+
+    if generator is None:
+        msg = "Generator is required for non-null query rewriters"
+        raise ValueError(msg)
+
+    strategy = config.query_rewrite.strategy
+    if strategy == "hyde":
+        return HyDEQueryRewriter(generator)
+    if strategy == "step-back":
+        return StepBackRewriter(generator)
+    if strategy == "multi-query":
+        return MultiQueryRewriter(generator)
+
+    msg = f"Unknown query rewrite strategy: {strategy}"
     raise ValueError(msg)

@@ -61,6 +61,12 @@ class Generator(ABC):
         self, query: str, context_nodes: list[NodeWithScore]
     ) -> AsyncGenerator[str, None]: ...
 
+    @property
+    @abstractmethod
+    def llm(self) -> object:
+        """Return the underlying LLM instance for direct use (e.g. by rewriters)."""
+        ...
+
 
 class QueryRewriter(ABC):
     """Rewrite a user query to improve retrieval quality.
