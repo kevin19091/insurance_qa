@@ -1,0 +1,32 @@
+# M5c — Multi-query rewriting
+
+chunk:
+  strategy: "recursive"
+  chunk_size: 500
+  chunk_overlap: 50
+
+embedding:
+  model: "bge-large"
+  dimension: 1024
+
+retrieval:
+  mode: "dense"
+  top_k: 5
+
+reranker:
+  enabled: false
+
+query_rewrite:
+  enabled: true
+  strategy: "multi-query"
+
+llm:
+  model: "gpt-4o-mini"
+  temperature: 0.0
+  max_tokens: 1024
+
+cache:
+  enabled: false
+
+seed: 42
+prompt_version: "v1"
