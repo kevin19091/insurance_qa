@@ -13,7 +13,7 @@ def _tokenize(text: str) -> list[str]:
     return text.lower().split()
 
 
-def _extract_nodes(index: VectorStoreIndex) -> tuple[TextNode, ...]:
+def extract_nodes_from_index(index: VectorStoreIndex) -> tuple[TextNode, ...]:
     """Extract all TextNode objects from an index, handling both fresh and persistent loads."""
     nodes_dict = getattr(index.index_struct, "nodes_dict", None)
     if nodes_dict:

@@ -35,10 +35,10 @@ async def chat(
     if index is None:
         return {"answer": "Index not available. Please ingest a document first.", "sources": []}
 
-    retriever = build_retriever(index=index, top_k=5)
-    generator = build_generator(request.app.state.config)
-    rewriter = build_rewriter(request.app.state.config, generator=generator)
     config = request.app.state.config
+    retriever = build_retriever(index=index, top_k=5, config=config)
+    generator = build_generator(config)
+    rewriter = build_rewriter(config, generator=generator)
 
     if config.query_rewrite.enabled:
         nodes = retrieve_with_rewriting(retriever, rewriter, QueryBundle(q))

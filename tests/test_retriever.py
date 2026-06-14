@@ -179,6 +179,38 @@ class _FixedScoreRetriever:
         for node_id, score in items:
             nodes.append(NodeWithScore(node=TextNode(text="", id_=node_id), score=score))
         return nodes
+
+
+class TestBuildRetrieverDispatch:
+    def test_dense_mode_returns_index_retriever(self) -> None:
+        from src.pipeline.factory import build_retriever
+        from src.pipeline.retriever import IndexRetriever
+
+        config = PipelineConfig(retrieval={"mode": "dense"})  # type: ignore[arg-type]
+        from src.pipeline.factory import build_index
+        index = build_index(PipelineConfig())
+        retriever = build_retriever(index, top_k=5, config=config)
+        assert isinstance(retriever, IndexRetriever)
+
+    def test_sparse_mode_returns_bm25_retriever(self) -> None:
+        from src.pipeline.factory import build_retriever
+        from src.pipeline.retriever import BM25Retriever
+
+        config = PipelineConfig(retrieval={"mode": "sparse"})  # type: ignore[arg-type]
+        from src.pipeline.factory import build_index
+        index = build_index(PipelineConfig())
+        retriever = build_retriever(index, top_k=5, config=config)
+        assert isinstance(retriever, BM25Retriever)
+
+    def test_hybrid_mode_returns_hybrid_retriever(self) -> None:
+        from src.pipeline.factory import build_retriever
+        from src.pipeline.retriever import HybridRetriever
+
+        config = PipelineConfig(retrieval={"mode": "hybrid"})  # type: ignore[arg-type]
+        from src.pipeline.factory import build_index
+        index = build_index(PipelineConfig())
+        retriever = build_retriever(index, top_k=5, config=config)
+        assert isinstance(retriever, HybridRetriever)
     def test_returns_top_k_nodes(self) -> None:
         from src.pipeline.retriever import BM25Retriever
 

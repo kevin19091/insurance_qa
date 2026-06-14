@@ -16,7 +16,13 @@ from src.pipeline.chunker import AgenticChunker, RecursiveChunker, SemanticChunk
 from src.pipeline.embedder import BgeEmbedder, CohereEmbedder, E5Embedder, OpenAIEmbedder
 from src.pipeline.generator import ClaudeGenerator, GeminiGenerator, OpenAIGenerator
 from src.pipeline.parser import PyMuPDFParser
-from src.pipeline.retriever import IndexRetriever, NullRetriever
+from src.pipeline.retriever import (
+    BM25Retriever,
+    HybridRetriever,
+    IndexRetriever,
+    NullRetriever,
+    extract_nodes_from_index,
+)
 from src.pipeline.rewriter import HyDEQueryRewriter, MultiQueryRewriter, NullQueryRewriter, StepBackRewriter
 
 # BGE-large-en-v1.5 (1024-dim, English)
@@ -115,10 +121,39 @@ def build_generator(config: PipelineConfig) -> Generator:
     raise ValueError(msg)
 
 
-def build_retriever(index: VectorStoreIndex, top_k: int) -> Retriever:
+def build_retriever(
+    index: VectorStoreIndex,
+    top_k: int,
+    config: PipelineConfig | None = None,
+) -> Retriever:
     if top_k == 0:
         return NullRetriever()
-    return IndexRetriever(index=index, top_k=top_k)
+
+    if config is None:
+        return IndexRetriever(index=index, top_k=top_k)
+
+    mode = config.retrieval.mode
+    if mode == "dense":
+        return IndexRetriever(index=index, top_k=top_k)
+
+    nodes = extract_nodes_from_index(index)
+
+    if mode == "sparse":
+        return BM25Retriever(nodes=nodes, top_k=top_k)
+
+    if mode == "hybrid":
+        dense = IndexRetriever(index=index, top_k=top_k)
+        sparse = BM25Retriever(nodes=nodes, top_k=top_k)
+        return HybridRetriever(
+            dense_retriever=dense,
+            sparse_retriever=sparse,
+            top_k=top_k,
+            dense_weight=config.retrieval.dense_weight,
+            sparse_weight=config.retrieval.sparse_weight,
+        )
+
+    msg = f"Unknown retrieval mode: {mode}"
+    raise ValueError(msg)
 
 
 def build_rewriter(config: PipelineConfig, generator: Generator | None = None) -> QueryRewriter:

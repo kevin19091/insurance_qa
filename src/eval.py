@@ -47,7 +47,7 @@ def run_eval(
     if retriever is None or generator is None:
         print("Building index...")
         index = build_index(config)
-        retriever = build_retriever(index, config.retrieval.top_k)
+        retriever = build_retriever(index, config.retrieval.top_k, config=config)
         generator = build_generator(config)
 
     rewriter = build_rewriter(config, generator=generator)
