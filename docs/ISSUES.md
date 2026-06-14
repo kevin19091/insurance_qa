@@ -31,6 +31,10 @@ Each issue is a thin, demonstrable end-to-end slice. Work sequentially — each 
 | 25 | Persistent Chroma + rebuild flag | AFK | #24 | `StorageConfig` with `chroma_path`, `PersistentClient` in factory, lazy-load if collection exists, `--rebuild` CLI flag. |
 | 26 | API server loads persisted index | AFK | #25 | `main.py` lifespan uses `build_index(config, force_rebuild=False)` instead of re-ingesting on startup. |
 | 27 | Chroma inspect CLI | AFK | #25 | `python -m src.chroma_inspect` dumps all raw chunk text + metadata from the persisted DB. |
+| 28 | QueryRewriter ABC + NullQueryRewriter + factory | AFK | #27 | Change `rewrite()` return type to `list[str]`. Implement `NullQueryRewriter` (returns `[query]`). `build_rewriter` dispatch via `query_rewrite.enabled` + `query_rewrite.strategy`. |
+| 29 | LLM-based rewriters: HyDE, step-back, multi-query | AFK | #28 | Three classes using the Generator to produce rewritten queries. Each has its own system prompt. HyDE generates hypothetical answer, step-back generates broader question, multi-query generates 3 variants. |
+| 30 | Integrate rewriting into retrieval pipeline | AFK | #29 | API routes and eval run rewriter before retriever. Multi-query merges results from all variants with deduplication by node ID. |
+| 31 | Execute M5 query rewriting sweep | AFK | #30 | Run 4 benchmarks: no-rewrite vs HyDE vs multi-query vs step-back. Save to `benchmarks/M5{a,b,c,d}/`. |
 
 ## Dependency Graph
 
@@ -45,8 +49,10 @@ Each issue is a thin, demonstrable end-to-end slice. Work sequentially — each 
                            9 ──→ 10 ──→ 13 ──→ 14 ──→ 15 ──→ 16 ──→ 17 ──→ 18 ──→ 19 ──→ 20 ──→ 21
                                                                                         │
                                                                                         22 ──→ 23 ──→ 24 ──→ 25 ──→ 26
-                                                                                                              │
-                                                                                                              27
+                                                                                                               │
+                                                                                                               27
+                                                                                                                │
+                                                                                                                28 ──→ 29 ──→ 30 ──→ 31
 
 3 ──→ 12 (can run parallel with 4-8)
 
@@ -56,10 +62,6 @@ Each issue is a thin, demonstrable end-to-end slice. Work sequentially — each 
 ## Post-M1 Milestones
 
 To be broken into issues after M1 lands:
-- M2: Chunk size sweep
-- M3: Chunking strategy comparison
-- M4: Embedding model sweep
-- M5: Query rewriting strategies
 - M6: Dense vs. sparse vs. hybrid retrieval
 - M7: Reranker impact
 - M8: Top-k sweep
