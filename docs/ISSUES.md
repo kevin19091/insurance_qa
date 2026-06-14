@@ -35,6 +35,10 @@ Each issue is a thin, demonstrable end-to-end slice. Work sequentially — each 
 | 29 | LLM-based rewriters: HyDE, step-back, multi-query | AFK | #28 | Three classes using the Generator to produce rewritten queries. Each has its own system prompt. HyDE generates hypothetical answer, step-back generates broader question, multi-query generates 3 variants. |
 | 30 | Integrate rewriting into retrieval pipeline | AFK | #29 | API routes and eval run rewriter before retriever. Multi-query merges results from all variants with deduplication by node ID. |
 | 31 | Execute M5 query rewriting sweep | AFK | #30 | Run 4 benchmarks: no-rewrite vs HyDE vs multi-query vs step-back. Save to `benchmarks/M5{a,b,c,d}/`. |
+| 32 | BM25 sparse retriever + node text extraction | AFK | #31 | `BM25Retriever` implementing `Retriever` ABC using `rank_bm25`. Extracts node texts from `VectorStoreIndex` (handles both fresh and persistent loads). Tests with known corpus. |
+| 33 | Hybrid retriever (dense + sparse fusion) | AFK | #32 | `HybridRetriever` combining `IndexRetriever` + `BM25Retriever` with reciprocal rank fusion. Uses `retrieval.sparse_weight` / `retrieval.dense_weight` from config. |
+| 34 | Update `build_retriever` to dispatch by `retrieval.mode` | AFK | #33 | `build_retriever` accepts config, dispatches to IndexRetriever (dense), BM25Retriever (sparse), or HybridRetriever (hybrid). |
+| 35 | Execute M6 retrieval mode sweep | AFK | #34 | Run 3 benchmarks: dense vs sparse vs hybrid. Save to `benchmarks/M6{a,b,c}/`. |
 
 ## Dependency Graph
 
@@ -52,7 +56,9 @@ Each issue is a thin, demonstrable end-to-end slice. Work sequentially — each 
                                                                                                                │
                                                                                                                27
                                                                                                                 │
-                                                                                                                28 ──→ 29 ──→ 30 ──→ 31
+                                                                                                                 28 ──→ 29 ──→ 30 ──→ 31
+                                                                                                                                       │
+                                                                                                                                       32 ──→ 33 ──→ 34 ──→ 35
 
 3 ──→ 12 (can run parallel with 4-8)
 
@@ -62,7 +68,6 @@ Each issue is a thin, demonstrable end-to-end slice. Work sequentially — each 
 ## Post-M1 Milestones
 
 To be broken into issues after M1 lands:
-- M6: Dense vs. sparse vs. hybrid retrieval
 - M7: Reranker impact
 - M8: Top-k sweep
 - M9: Caching
