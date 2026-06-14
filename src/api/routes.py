@@ -10,7 +10,8 @@ from fastapi import APIRouter, Query, Request
 from llama_index.core.schema import QueryBundle, TextNode
 from sse_starlette.sse import EventSourceResponse
 
-from src.pipeline.factory import build_generator, build_retriever
+from src.pipeline.factory import build_generator, build_retriever, build_rewriter
+from src.pipeline.retriever import retrieve_with_rewriting
 
 router = APIRouter(prefix="/api")
 
@@ -36,8 +37,13 @@ async def chat(
 
     retriever = build_retriever(index=index, top_k=5)
     generator = build_generator(request.app.state.config)
+    rewriter = build_rewriter(request.app.state.config, generator=generator)
+    config = request.app.state.config
 
-    nodes = retriever.retrieve(QueryBundle(q))
+    if config.query_rewrite.enabled:
+        nodes = retrieve_with_rewriting(retriever, rewriter, QueryBundle(q))
+    else:
+        nodes = retriever.retrieve(QueryBundle(q))
     answer = generator.generate(q, nodes)
 
     sources = [
@@ -100,7 +106,13 @@ async def chat_stream(
 
     retriever = build_retriever(index=index, top_k=5)
     generator_inst = build_generator(request.app.state.config)
-    nodes = retriever.retrieve(QueryBundle(q))
+    rewriter = build_rewriter(request.app.state.config, generator=generator_inst)
+    config = request.app.state.config
+
+    if config.query_rewrite.enabled:
+        nodes = retrieve_with_rewriting(retriever, rewriter, QueryBundle(q))
+    else:
+        nodes = retriever.retrieve(QueryBundle(q))
     sources = _build_sources(nodes)
 
     return EventSourceResponse(_stream_events(request, generator_inst, nodes, sources, q))

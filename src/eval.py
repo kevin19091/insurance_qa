@@ -25,7 +25,8 @@ from ragas.metrics import (
 )
 
 from src.config import PipelineConfig
-from src.pipeline.factory import build_generator, build_index, build_retriever
+from src.pipeline.factory import build_generator, build_index, build_retriever, build_rewriter
+from src.pipeline.retriever import retrieve_with_rewriting
 
 load_dotenv()
 
@@ -49,6 +50,8 @@ def run_eval(
         retriever = build_retriever(index, config.retrieval.top_k)
         generator = build_generator(config)
 
+    rewriter = build_rewriter(config, generator=generator)
+
     qa_pairs = load_qa_pairs(Path("data/eval/qa.json"))
     print(f"Evaluating {len(qa_pairs)} QA pairs...")
 
@@ -65,7 +68,10 @@ def run_eval(
         print(f"  [{i + 1}/{len(qa_pairs)}] {q[:60]}...")
 
         t0 = time.time()
-        nodes = retriever.retrieve(QueryBundle(q))
+        if config.query_rewrite.enabled:
+            nodes = retrieve_with_rewriting(retriever, rewriter, QueryBundle(q))
+        else:
+            nodes = retriever.retrieve(QueryBundle(q))
         retrieval_ms = (time.time() - t0) * 1000
 
         t0 = time.time()
