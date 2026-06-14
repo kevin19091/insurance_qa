@@ -11,7 +11,7 @@ Single-VM architecture: one Railway (or Fly.io) instance runs the FastAPI backen
 | Backend + Frontend   | Railway            | Hobby ($5/mo) or Fly.io free    | $0–5         |
 | LLM API              | OpenAI (GPT-4o-mini)| Pay-per-token                   | $3–15 (dev)  |
 | LLM Benchmark        | OpenAI (GPT-4o)    | Pay-per-token, on-demand only   | ~$2/run      |
-| Vector DB (M1–M5)   | In-process Chroma  | None (runs on VM)               | $0           |
+| Vector DB (M1–M5)   | In-process Chroma (persistent SQLite) | None (runs on VM)               | $0           |
 | Vector DB (M6+)      | Qdrant Cloud       | Free tier (1GB cluster)         | $0           |
 | Observability        | LangFuse (self-hosted) | Docker on same VM           | $0           |
 | Embedding            | BGE-large (CPU)    | Runs on VM, no GPU              | $0           |

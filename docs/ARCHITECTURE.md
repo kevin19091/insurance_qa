@@ -48,14 +48,17 @@ The Insurance QnA Bot is a **config-driven RAG pipeline**. Every component (chun
 
 ## Data Flow
 
-### 1. Ingestion (offline, once per PDF)
+### 1. Ingestion (offline, once per PDF, persisted)
+
 ```
 PDF file
   → Parser.parse(file_path) → list[Document]        # Raw text + metadata
   → Chunker.chunk(docs)     → list[Document]         # Split into nodes
   → Embedder.embed(nodes)   → list[Document]         # Add embedding vectors
-  → VectorDB.add(nodes)                               # Persist in Chroma
+  → VectorDB.add(nodes)                               # Persist in Chroma (SQLite at data/chroma/)
 ```
+
+The index is **persistent** — second and subsequent runs skip re-ingestion and load the existing Chroma DB. Use `--rebuild` to force a fresh ingestion.
 
 ### 2. Query (online, per request)
 ```
@@ -79,7 +82,7 @@ chunk:
   chunk_overlap: 50
 
 embedding:
-  model: bge-large           # bge-large | text-embedding-3-small | cohere-embed-v3
+  model: bge-large           # bge-large | text-embedding-3-small | cohere-embed-v3 | e5-large
   dimension: 1024
 
 retrieval:
@@ -95,6 +98,9 @@ query_rewrite:
 llm:
   model: gpt-4o-mini
   temperature: 0.0
+
+storage:
+  chroma_path: data/chroma    # Persistent Chroma SQLite DB location
 
 seed: 42
 prompt_version: v1
@@ -135,7 +141,8 @@ src/pipeline/factory.py    ← build_*() dispatch from config
 src/config.py              ← Pydantic PipelineConfig model
 src/api/routes.py          ← FastAPI endpoints
 src/main.py                ← FastAPI app + static file mount
-src/eval/metrics.py        ← RAGAS evaluation runner
+src/eval.py                ← RAGAS evaluation runner
+src/chroma_inspect.py      ← CLI to inspect raw Chroma DB entries
 benchmarks/Mx/config.yaml  ← Per-milestone strategy config
 prompts/system_prompt.yaml ← Versioned system prompts
 ```

@@ -13,6 +13,7 @@ The whole point of this repo is **benchmarking**: systematically swapping one st
 ```
 insurance_qa/
 ├── data/
+│   ├── chroma/                    # Persistent Chroma SQLite DB
 │   ├── max-life-....pdf          # The source policy document
 │   └── eval/
 │       └── qa.json               # 10 golden Q&A pairs (the eval set)
@@ -21,6 +22,7 @@ insurance_qa/
 │   ├── M1/                       # Naive RAG baseline results
 │   ├── M2a/ ... M2e/             # Chunk size sweep (250-1500)
 │   ├── M3a/ ... M3d/             # Chunking strategy comparison
+│   ├── M4a/ M4b/ M4d/            # Embedding model sweep
 │   └── each has:
 │       ├── config.yaml           # The config used for this run
 │       ├── trace.json            # Timing, node count, overrides
@@ -31,6 +33,7 @@ insurance_qa/
 │   ├── config.py                 # Pydantic models for pipeline config
 │   ├── eval.py                   # Eval harness (run pipeline + RAGAS)
 │   ├── run.py                    # CLI benchmark runner
+│   ├── chroma_inspect.py         # CLI to inspect raw Chroma DB entries
 │   ├── observability.py          # LangFuse decorator re-export
 │   ├── api/
 │   │   └── routes.py             # /api/chat, /api/chat/stream, /api/health, /api/chat/abort
@@ -38,7 +41,7 @@ insurance_qa/
 │       ├── __init__.py           # ABC interfaces for each component
 │       ├── parser.py             # PyMuPDFParser
 │       ├── chunker.py            # RecursiveChunker, SentenceChunker, SemanticChunker, AgenticChunker
-│       ├── embedder.py           # BgeEmbedder (others to be added)
+│       ├── embedder.py           # BgeEmbedder, OpenAIEmbedder, CohereEmbedder, E5Embedder
 │       ├── retriever.py          # IndexRetriever, NullRetriever
 │       ├── generator.py          # OpenAIGenerator, ClaudeGenerator, GeminiGenerator
 │       ├── factory.py            # Builds components from PipelineConfig
@@ -49,10 +52,11 @@ insurance_qa/
 │   └── package.json
 ├── tests/
 │   ├── test_config.py            # PipelineConfig + factory dispatch tests
-│   ├── test_ingestion.py         # Chunker, embedder, index tests
+│   ├── test_ingestion.py         # Chunker, embedder, index, persistent Chroma tests
 │   ├── test_chat.py              # Retriever, generator, chat/stream/abort endpoints
+│   ├── test_chroma_inspect.py    # Chroma inspect CLI tests
 │   ├── test_eval.py              # QA pair loading, run_eval structure
-│   ├── test_run.py               # Cost estimate, usage log, override parsing, benchmarks
+│   ├── test_run.py               # Cost estimate, usage log, override parsing, benchmarks, rebuild flag
 │   ├── test_generator.py         # Prompt building, usage tracking, factory dispatch
 │   ├── test_observability.py     # LangFuse observe decorator
 │   └── e2e/chat_ui.mjs           # Playwright E2E test (headless Chromium)
@@ -63,7 +67,8 @@ insurance_qa/
 │   ├── ISSUES.md                 # Implementation plan (vertical slices)
 │   ├── observations/             # Benchmark analysis reports
 │   │   ├── M2-chunk-size-sweep.md
-│   │   └── M3-chunking-strategy-comparison.md
+│   │   ├── M3-chunking-strategy-comparison.md
+│   │   └── M4-embedding-model-sweep.md
 │   └── adr/                      # Architecture Decision Records
 ├── AGENTS.md                     # Agent routing + dev workflow
 └── pyproject.toml                # Python dependencies
@@ -108,11 +113,12 @@ Every component follows the same pattern:
 |-----------|-----------|-----------------|-------------|
 | Parser | `Parser.parse()` | `PyMuPDFParser` | — |
 | Chunker | `Chunker.chunk()` | `RecursiveChunker`, `SentenceChunker`, `SemanticChunker`, `AgenticChunker` | `chunk.strategy` |
-| Embedder | `Embedder.embed()` | `BgeEmbedder` | `embedding.model` |
+| Embedder | `Embedder.embed()` | `BgeEmbedder`, `OpenAIEmbedder`, `E5Embedder` | `embedding.model` |
 | Retriever | `Retriever.retrieve()` | `IndexRetriever`, `NullRetriever` | `retrieval.top_k` |
 | Generator | `Generator.generate()` / `.stream()` | `OpenAIGenerator`, `ClaudeGenerator`, `GeminiGenerator` | `llm.model` |
 | Reranker | `Reranker.rerank()` | *(stub)* | `reranker.enabled` |
 | QueryRewriter | `QueryRewriter.rewrite()` | *(stub)* | `query_rewrite.enabled` |
+| Storage | — | Chroma (SQLite, persistent) | `storage.chroma_path` |
 
 ### Configuration
 
@@ -128,6 +134,8 @@ retrieval:
   top_k: 5
 llm:
   model: "gpt-4o-mini"
+storage:
+  chroma_path: "data/chroma"       # Persistent vector DB location
 ```
 
 Override from CLI without editing files:
@@ -147,15 +155,25 @@ python -m uvicorn src.main:app --port 8000
 # → http://localhost:8000 (React UI) or /api/chat?q=...
 ```
 
+The index is **persistent** — first start ingests the PDF into Chroma at `data/chroma/`. Subsequent starts load the existing index (no re-ingestion).
+
 ### Run a benchmark
 
 ```bash
 python -m src.run M0                    # Full benchmark (ingest + eval)
 python -m src.run M1 --skip-eval        # Ingest only
+python -m src.run M1 --rebuild          # Force re-ingestion (ignore cached index)
 python -m src.run M1 --override chunk.chunk_size=250
 ```
 
 Results go to `benchmarks/<milestone>/` with `trace.json`, `cost_log.json`, `eval_results.json`.
+
+### Inspect the vector DB
+
+```bash
+python -m src.chroma_inspect            # Dump all raw entries from data/chroma/
+python -m src.chroma_inspect --path my/chroma/path
+```
 
 ### Run tests
 
@@ -183,10 +201,11 @@ python -m src.eval --config benchmarks/M0/config.yaml
 | Test file | What it tests |
 |-----------|---------------|
 | `test_config.py` | Config defaults, YAML loading, validation errors, factory dispatch for chunker strategies, parser returns documents |
-| `test_ingestion.py` | All 4 chunker types produce nodes, BGE embedder outputs correct dimensions, index is queryable, health endpoint returns node count |
+| `test_ingestion.py` | All 4 chunker types produce nodes, BGE embedder outputs correct dimensions, index is queryable, health endpoint returns node count, persistent Chroma lazy-loads and rebuilds |
 | `test_chat.py` | Retriever returns scored nodes, NullRetriever returns empty, generator produces answer from context, streaming SSE endpoint returns token/done events, abort endpoint works |
+| `test_chroma_inspect.py` | Inspect CLI dumps raw entries with correct schema, CLI round-trip via `--path` flag |
 | `test_eval.py` | QA pair loading (10 pairs, required fields), run_eval returns correct structure and scores |
-| `test_run.py` | Cost estimation, usage log building, config override parsing and type coercion, applying overrides to config, benchmark produces artifacts |
+| `test_run.py` | Cost estimation, usage log building, config override parsing and type coercion, applying overrides to config, benchmark produces artifacts, `--rebuild` flag forces re-ingestion |
 | `test_generator.py` | Prompt building (with context, without context, multiple contexts, source citations), usage starts at zero, factory dispatch for OpenAI/Claude/Gemini models |
 | `test_observability.py` | Observe decorator works without LangFuse config, get_langfuse returns a client |
 | `e2e/chat_ui.mjs` | Full end-to-end: starts server, opens Chromium, types question, asserts streaming response contains expected content |

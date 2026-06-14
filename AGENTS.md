@@ -36,7 +36,9 @@ frontend/       React web chat UI
 
 - **Want to understand what to build?** → `docs/PRD.md`
 - **Want to see implementation order?** → `docs/ISSUES.md`
-- **Want to run a milestone?** → `docs/PRD.md` §10, pick a milestone, create `benchmarks/Mx/config.yaml`
+- **Want to run a milestone?** → `docs/PRD.md` §10, pick a milestone, create `benchmarks/Mx/config.yaml`. First run ingests into persistent Chroma (`data/chroma/`), subsequent runs skip re-ingestion.
+- **Want to force re-ingestion?** → `python -m src.run M1 --rebuild` or `rm -rf data/chroma/`
+- **Want to inspect raw vector DB entries?** → `python -m src.chroma_inspect`
 - **Want to add a new retrieval strategy?** → Implement the retriever interface, register it in the pipeline factory, create a new config YAML
 - **Want to evaluate?** → Run against `data/eval/` golden QA pairs using RAGAS metrics
 - **Want to debug a bad answer?** → Search LangFuse trace by query, inspect retrieval → generation chain
