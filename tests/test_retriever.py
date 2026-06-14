@@ -73,6 +73,53 @@ class _MultiQueryRewriter:
         return self._queries
 
 
+class TestBM25Retriever:
+    def test_returns_top_k_nodes(self) -> None:
+        from src.pipeline.retriever import BM25Retriever
+
+        nodes = [
+            TextNode(text="The premium is payable monthly.", id_="a"),
+            TextNode(text="Coverage includes cardiac surgery.", id_="b"),
+            TextNode(text="Exclusions apply for pre-existing conditions.", id_="c"),
+            TextNode(text="The policy covers hospitalisation expenses.", id_="d"),
+            TextNode(text="Claim must be filed within 30 days.", id_="e"),
+        ]
+        retriever = BM25Retriever(nodes=tuple(nodes), top_k=2)
+        result = retriever.retrieve(QueryBundle("cardiac surgery coverage hospitalisation"))
+        assert len(result) == 2
+        returned_ids = {n.node.node_id for n in result}
+        assert "b" in returned_ids
+        assert "d" in returned_ids
+
+    def test_returns_empty_for_no_match(self) -> None:
+        from src.pipeline.retriever import BM25Retriever
+
+        nodes = [
+            TextNode(text="The premium is payable monthly.", id_="p"),
+            TextNode(text="Coverage includes cardiac surgery.", id_="c"),
+            TextNode(text="Exclusions apply for pre-existing conditions.", id_="e"),
+            TextNode(text="The policy covers hospitalisation expenses.", id_="h"),
+            TextNode(text="Claim must be filed within 30 days.", id_="cl"),
+        ]
+        retriever = BM25Retriever(nodes=tuple(nodes), top_k=5)
+        result = retriever.retrieve(QueryBundle("zzzzzzzzzzxxxxxxyyyyyy"))
+        assert len(result) == 0
+
+    def test_returns_matching_when_top_k_larger(self) -> None:
+        from src.pipeline.retriever import BM25Retriever
+
+        nodes = [
+            TextNode(text="Premium payment terms.", id_="a"),
+            TextNode(text="Coverage details for cardiac procedures.", id_="b"),
+            TextNode(text="Exclusions for pre-existing conditions.", id_="c"),
+            TextNode(text="Hospitalisation expense coverage.", id_="d"),
+            TextNode(text="Claim filing procedure.", id_="e"),
+        ]
+        retriever = BM25Retriever(nodes=tuple(nodes), top_k=100)
+        result = retriever.retrieve(QueryBundle("coverage cardiac hospitalisation"))
+        assert len(result) >= 2
+
+
 @pytest.mark.slow
 class TestRetrieveWithRewritingIntegration:
     @pytest.mark.skipif(not _OPENAI_AVAILABLE, reason="OPENAI_API_KEY not set")
