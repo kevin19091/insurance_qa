@@ -1,11 +1,11 @@
 {
   "milestone": "M6a",
-  "timestamp": "2026-06-14T18:20:05.763591+00:00",
+  "timestamp": "2026-06-15T13:35:05.013940+00:00",
   "config_path": "benchmarks/M6a/config.yaml",
   "config_override": null,
   "rebuild": false,
   "seed": 42,
   "prompt_version": "v1",
-  "duration_seconds": 79.93,
+  "duration_seconds": 60.37,
   "index_node_count": 37
 }

@@ -1,11 +1,11 @@
 {
   "milestone": "M5c",
-  "timestamp": "2026-06-14T16:05:50.635707+00:00",
+  "timestamp": "2026-06-15T13:30:16.278903+00:00",
   "config_path": "benchmarks/M5c/config.yaml",
   "config_override": null,
   "rebuild": false,
   "seed": 42,
   "prompt_version": "v1",
-  "duration_seconds": 115.13,
+  "duration_seconds": 112.23,
   "index_node_count": 37
 }

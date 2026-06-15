@@ -1,42 +1,37 @@
 # M5 — Query Rewriting Strategy Sweep
 
-**Date:** 2026-06-14
+**Date:** 2026-06-14 (re-run with harder QA pairs)
 **Base config:** M1 (Naive RAG) — GPT-4o-mini, recursive chunker (TokenTextSplitter), chunk_size=500, bge-large, dense retrieval top_k=5
 **Variable:** `query_rewrite.enabled` + `query_rewrite.strategy` in [none, hyde, multi-query, step-back]
+**Dataset:** 10 QA pairs (5 hard paraphrased + 5 mixed difficulty, replaces 5 easy direct-match pairs)
 
 ## Results
 
 | Strategy | cost  | duration | retr avg | gen avg  | faith | relevancy | precision | recall |
 |----------|-------|----------|----------|----------|-------|-----------|-----------|--------|
-| no-rewrite | $0.003 | 85s | 613ms | 3,614ms | 0.775 | 0.930 | 0.913 | 0.733 |
-| HyDE | $0.003 | 109s | 3,198ms | 3,261ms | 0.722 | 0.927 | **0.962** | 0.738 |
-| multi-query | $0.004 | 115s | 2,790ms | 4,597ms | 0.714 | 0.918 | 0.902 | **0.855** |
-| step-back | $0.003 | **78s** | 1,176ms | 3,187ms | **0.774** | **0.933** | 0.882 | 0.688 |
+| no-rewrite | $0.003 | 75s | 613ms | 2,789ms | **0.724** | 0.662 | 0.969 | 0.603 |
+| HyDE | $0.003 | 99s | 3,531ms | 2,781ms | 0.687 | 0.922 | **0.990** | **0.727** |
+| multi-query | $0.004 | 112s | 3,331ms | 4,066ms | 0.647 | 0.912 | 0.944 | **0.777** |
+| step-back | $0.003 | 91s | 1,668ms | 2,762ms | 0.628 | 0.837 | 0.965 | 0.652 |
 
-*Note: Duration includes RAGAS eval time (~40s), not just retrieval+generation.*
+*Note: Duration includes RAGAS eval time (~40s). Harder questions reduced relevancy (0.66 vs 0.93 on easy set) because answers are more nuanced.*
 
 ## Analysis
 
-### No-rewrite — Best all-around
-Faithfulness (0.775) and relevancy (0.930) are the highest or tied. Lowest retrieval latency (613ms). No extra LLM cost for rewriting. The baseline remains the strongest overall choice.
+### No-rewrite — Best faithfulness (0.724)
+Still the strongest for answer accuracy. Dense retrieval with no query rewriting gives the LLM the most reliable context. But recall drops to 0.603 — half the questions fail to retrieve relevant chunks because the paraphrased questions don't share keywords with the source text.
 
-### HyDE — Best precision (0.962)
-Generates a hypothetical answer document before retrieval, which boosts context precision. But:
-- Retrieval latency jumps 5× (613ms → 3,198ms) — each query does one extra LLM call
-- Faithfulness drops to 0.722 — the hypothetical answer may bias the generation
-- Recall barely changes (0.733 → 0.738)
+### HyDE — Best precision (0.990), best recall of rewrite strategies (0.727)
+Generating a hypothetical answer document bridges the paraphrase gap — it translates "my father is 72" into structured policy language about age eligibility. Precision at 0.990 means almost every retrieved chunk is relevant. However, retrieval latency is 5.7× baseline (3,531ms) due to the extra LLM call.
 
-### Multi-query — Best recall (0.855)
-Generates 3 query variants, retrieves each, merges results. Recall jumps from 0.733 to 0.855. But:
-- Cost 33% higher ($0.004 vs $0.003) — extra LLM calls per query
-- Retrieval latency 4.5× baseline (2,790ms)
-- Faithfulness drops to 0.714 — more context doesn't mean better answers
+### Multi-query — Best overall recall (0.777)
+Generating 3 query variants captures more coverage but at a cost: lowest faithfulness (0.647) and highest latency/cost. The extra context confuses the LLM.
 
-### Step-back — Fastest total time (78s), tied faithfulness (0.774)
-Generates a broader question but retrieval is only 2× slower than baseline (1,176ms). However recall drops to 0.688 — the broader question loses specificity.
+### Step-back — Weakest (0.628)
+Broadening the question loses specificity — "my colleague is turning 70" becomes something generic about eligibility, losing the precise age information needed.
 
 ## Recommendation
 
-**Keep no-rewrite as default.** Rewriting adds latency and cost without improving faithfulness. The extra retrieval coverage from multi-query (recall +0.122) doesn't translate to better answers (faith -0.061).
+**Keep no-rewrite as default for answer quality.** Use **HyDE** when recall is critical and you can accept higher latency. Avoid multi-query and step-back for this dataset — they hurt faithfulness without proportionate recall gains.
 
-**Use multi-query only if recall is the priority** and you can accept the extra cost and latency. All rewriting strategies hurt faithfulness — they introduce context that the LLM may misinterpret.
+Compared to the earlier sweep on easy questions, rewriting strategies show their value more clearly on harder questions: HyDE improves recall by +0.124 and precision by +0.021, while nearly matching no-rewrite on faithfulness.

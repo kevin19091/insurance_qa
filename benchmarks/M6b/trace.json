@@ -1,11 +1,11 @@
 {
   "milestone": "M6b",
-  "timestamp": "2026-06-14T18:22:22.947230+00:00",
+  "timestamp": "2026-06-15T13:36:47.395750+00:00",
   "config_path": "benchmarks/M6b/config.yaml",
   "config_override": null,
   "rebuild": false,
   "seed": 42,
   "prompt_version": "v1",
-  "duration_seconds": 73.35,
+  "duration_seconds": 67.24,
   "index_node_count": 37
 }

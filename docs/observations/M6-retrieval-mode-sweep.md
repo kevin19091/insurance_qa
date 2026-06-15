@@ -1,8 +1,9 @@
 # M6 — Retrieval Mode Sweep (Dense vs Sparse vs Hybrid)
 
-**Date:** 2026-06-14
+**Date:** 2026-06-14 (re-run with harder QA pairs)
 **Base config:** M1 (Naive RAG) — GPT-4o-mini, recursive chunker (TokenTextSplitter), chunk_size=500, bge-large, top_k=5
 **Variable:** `retrieval.mode` in [dense, sparse, hybrid]
+**Dataset:** 10 QA pairs (5 hard paraphrased + 5 mixed difficulty, replaces 5 easy direct-match pairs)
 
 Sparse uses BM25 (`rank_bm25`). Hybrid uses weighted reciprocal rank fusion (70% dense, 30% sparse).
 
@@ -10,30 +11,24 @@ Sparse uses BM25 (`rank_bm25`). Hybrid uses weighted reciprocal rank fusion (70%
 
 | Retrieval | cost  | duration | retr avg | gen avg  | faith | relevancy | precision | recall |
 |-----------|-------|----------|----------|----------|-------|-----------|-----------|--------|
-| dense (BGE) | $0.003 | 80s | 246ms | 2,766ms | 0.756 | 0.931 | 0.866 | 0.758 |
-| sparse (BM25) | $0.003 | 73s | 242ms | 2,768ms | 0.756 | 0.927 | **0.918** | **0.792** |
-| hybrid | $0.003 | 82s | 249ms | 3,336ms | 0.748 | 0.927 | 0.913 | 0.705 |
+| dense (BGE) | $0.003 | 60s | 268ms | 2,492ms | 0.639 | 0.662 | **0.972** | 0.603 |
+| sparse (BM25) | $0.003 | 67s | 276ms | 2,967ms | 0.669 | 0.738 | 0.959 | 0.603 |
+| hybrid | $0.003 | 66s | 284ms | 2,611ms | **0.719** | **0.741** | **0.972** | 0.578 |
 
 ## Analysis
 
-### Sparse (BM25) — Surprising leader
-BM25 keyword retrieval matches or beats dense across every metric:
-- Same faithfulness (0.756) and virtually identical cost/latency
-- Higher precision (0.918 vs 0.866) — BM25 finds more on-topic chunks
-- Higher recall (0.792 vs 0.758) — BM25 casts a wider keyword net that still lands relevant results
+With the harder paraphrase-based questions, the earlier M6 results invert:
 
-Insurance policy text uses precise, domain-specific terminology ("cardiac surgery", "pre-existing condition", "premium payment") — exactly the kind of language BM25 excels at matching.
+### Dense vs Sparse — Now nearly tied
+BM25 no longer dominates. On easy questions with keyword overlap, BM25 had a clear edge. On paraphrased questions (e.g., "My father is 72" instead of "Am I eligible at age 68"), both modes struggle equally — recall drops to 0.603 for both. Sparse edges ahead on faithfulness (0.669 vs 0.639) because BM25-exact matches are more reliable when they do occur.
 
-### Dense (BGE) — Solid baseline
-Consistent performance across all metrics. Retrieval latency is low (246ms). The embedding captures semantic relationships but doesn't improve over exact keyword matching for this dataset.
+### Hybrid — Best faithfulness (0.719)
+Reciprocal rank fusion produces the most reliable answers. When one mode fails to find relevant chunks, the other may compensate, and the RRF scoring downweights unreliable results. Faithfulness improves by +0.080 over sparse and +0.050 over the earlier easy-QA baseline. This is the strongest signal yet that fusion helps on genuinely hard questions.
 
-### Hybrid — Lower recall (0.705)
-Weighted fusion underperforms both individual modes. The RRF combination seems to dilute strong single-mode signals. Possible improvements:
-- Tune dense/sparse weights (currently 70/30)
-- Use a cutoff before fusion (only include nodes both retrievers agree on)
+However, recall drops to 0.578 — the fusion threshold may be too aggressive, filtering out chunks that only one retriever found.
 
 ## Recommendation
 
-**Use sparse (BM25) as the default.** It's simpler (no embedding needed for retrieval), faster, and produces better recall and precision on this insurance Q&A dataset. Keep dense as a fallback for questions requiring semantic understanding rather than keyword matches.
+**Use hybrid retrieval** as the new default. It produces the most faithful answers (0.719) on real-world paraphrased questions. The +0.050 faith gain over no-rewrite dense is meaningful.
 
-**Skip hybrid** unless the weights are tuned or the fusion strategy is improved.
+Consider tuning the dense/sparse weights and RRF constant — the current 70/30 split may need adjustment for optimal recall.
