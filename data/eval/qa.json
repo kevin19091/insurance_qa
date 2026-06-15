@@ -10,8 +10,8 @@
     "source_pages": [8, 10]
   },
   {
-    "question": "I'm 68 and applying for a loan. Am I eligible for coverage?",
-    "reference_answer": "Yes, you are eligible if you are a natural person between 15 and 69 years of age on the Date of Commencement of Risk or Entry Date, and will not be more than 70 years of age on the date the Insurance expires. The proposed Period of Coverage must be at least 1 year.",
+    "question": "My father is 72 and needs a loan. The bank requires this insurance — can he get covered?",
+    "reference_answer": "No. Eligibility requires being between 15 and 69 years of age on the Date of Commencement of Risk. At 72, your father exceeds the maximum entry age of 69. Additionally, he must not be more than 70 years of age on the date the Insurance expires. The proposed Period of Coverage must be at least 1 year.",
     "source_pages": [8]
   },
   {
@@ -20,19 +20,19 @@
     "source_pages": [10]
   },
   {
-    "question": "My spouse passed away — what documents do I need to submit a claim?",
-    "reference_answer": "You need to submit: (i) claimant's statement in the prescribed form; (ii) original Certificate of Insurance; (iii) original death certificate issued by the local or municipal authority; (iv) identity proof of the Member and the Nominee(s) bearing their photographs and signatures; and (v) any other documents or information required by the Company for assessing and approving the claim request.",
+    "question": "My mother passed away two months ago — I just found her insurance certificate. Can we still file a claim?",
+    "reference_answer": "The notification deadline has likely passed. The Master Policyholder must notify Max Life Insurance in writing within 30 days from the date of the insured event. Since two months (approximately 60 days) have elapsed, the prescribed notification period has been exceeded. However, you should still contact the Claims Unit at Max Life Insurance Company Limited, Plot 90A, Sector 18, HUDA, Gurugram 122002, Haryana, India, as the Company may consider late claims under special circumstances, though acceptance is not guaranteed.",
     "source_pages": [11]
   },
   {
-    "question": "How soon must I notify Max Life after a death?",
-    "reference_answer": "The Master Policyholder must notify Max Life Insurance in writing of the happening of the Insured Event within 30 days from the date of the event. The claim should be registered at the Claims Unit, Max Life Insurance Company Limited, Plot 90A, Sector 18, HUDA, Gurugram 122002, Haryana, India.",
-    "source_pages": [11]
-  },
-  {
-    "question": "Can I cancel my coverage and get money back?",
-    "reference_answer": "Yes, a Member may at any time request surrender of his Insurance by making a written request through the Master Policyholder or directly to the Company. The Surrender Value is calculated as: 70% of Premium paid multiplied by (Unexpired Period of Coverage in months / Total Period of Coverage in months) multiplied by (Sum Assured applicable on the date of Surrender / Sum Assured on the Date of Commencement of Risk).",
+    "question": "I've been paying premiums for 3 years on a 7-year plan with a level Sum Assured of ₹5,00,000 and total premium of ₹10,000. I want to stop. Will the company give me anything?",
+    "reference_answer": "Yes, you can surrender the policy at any time by making a written request through the Master Policyholder. The Surrender Value is calculated as: 70% of Premium paid multiplied by (Unexpired Period of Coverage in months / Total Period of Coverage in months) multiplied by (Sum Assured applicable on the date of Surrender / Sum Assured on the Date of Commencement of Risk). For a 7-year (84-month) plan with 3 years (36 months) paid, the unexpired period is 48 months. For Level Cover the Sum Assured ratio is 1. So: 0.70 x ₹10,000 x (48/84) x 1 = ₹4,000.",
     "source_pages": [10]
+  },
+  {
+    "question": "I'm gathering paperwork for a claim after my husband's death. I have the death certificate but can't find the policy document. What else do I need?",
+    "reference_answer": "You need several additional documents beyond the death certificate: (i) a claimant's statement in the prescribed form; (ii) the original Certificate of Insurance (if you cannot find your copy, contact the Master Policyholder to obtain a duplicate); (iii) identity proof of the Member (your husband) and the Nominee(s) bearing their photographs and signatures; and (iv) any other documents or information required by the Company for assessing and approving the claim request. The Master Policyholder must also notify Max Life Insurance in writing within 30 days of the death.",
+    "source_pages": [11]
   },
   {
     "question": "Under what circumstances can Max Life Insurance repudiate or cancel a claim or policy?",
@@ -45,8 +45,8 @@
     "source_pages": [16]
   },
   {
-    "question": "Do I need a medical exam to get coverage?",
-    "reference_answer": "Not necessarily. The Free Cover Limit is the Sum Assured amount up to which Insurance cover can be allowed based on simple insurability conditions without requiring any evidence of health. If the Sum Assured exceeds the Free Cover Limit, health evidence may be required.",
-    "source_pages": [7]
+    "question": "My colleague is turning 70 next month and his loan application requires this policy. Will he be accepted?",
+    "reference_answer": "Your colleague may be eligible if he is currently 69 years of age (not more than 69 on the Date of Commencement of Risk). However, he must also not be more than 70 years of age on the date the Insurance expires. Since he is turning 70 next month, eligibility depends on whether the coverage period would extend past his 70th birthday. If the policy starts before he turns 70 and the Period of Coverage ends before he turns 71 (at least 1 year), he should qualify. If the policy period would extend beyond his 70th birthday, he does not meet the age condition.",
+    "source_pages": [8]
   }
 ]
