@@ -24,9 +24,31 @@ body {
   padding: 24px 16px 8px;
 }
 
+.header-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
 .header h1 {
   font-size: 1.5rem;
   font-weight: 700;
+}
+
+.dev-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: #666;
+  cursor: pointer;
+  user-select: none;
+}
+
+.dev-toggle input {
+  cursor: pointer;
 }
 
 .subtitle {
@@ -226,4 +248,152 @@ body {
   font-size: 0.75rem;
   color: #999;
   border-top: 1px solid #e0e0e0;
+}
+
+.dev-panel {
+  background: #f0f4f8;
+  border-bottom: 1px solid #d0d8e0;
+  padding: 12px 16px;
+}
+
+.dev-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.75rem;
+  color: #555;
+}
+
+.control-group span {
+  text-transform: capitalize;
+}
+
+.control-group select {
+  padding: 4px 8px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  background: #fff;
+  min-width: 120px;
+}
+
+.control-group.readonly {
+  opacity: 0.6;
+}
+
+.readonly-value {
+  font-size: 0.8rem;
+  color: #333;
+  padding: 4px 8px;
+  background: #e8e8e8;
+  border-radius: 6px;
+}
+
+.pipeline-steps {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.step.running {
+  background: #e3f2fd;
+  color: #1565c0;
+}
+
+.step.complete {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.step-spinner {
+  width: 10px;
+  height: 10px;
+  border: 2px solid #90caf9;
+  border-top-color: #1565c0;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.step-name {
+  text-transform: capitalize;
+}
+
+.step-metrics {
+  color: #666;
+  font-size: 0.7rem;
+}
+
+.trace-summary {
+  margin-top: 8px;
+  font-size: 0.8rem;
+}
+
+.trace-summary summary {
+  cursor: pointer;
+  color: #0066cc;
+  font-weight: 500;
+}
+
+.trace-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px 0;
+}
+
+.trace-row {
+  display: flex;
+  gap: 12px;
+  font-size: 0.8rem;
+}
+
+.trace-step {
+  flex: 1;
+  text-transform: capitalize;
+}
+
+.trace-duration {
+  color: #555;
+  width: 60px;
+  text-align: right;
+}
+
+.trace-cost {
+  color: #888;
+  width: 80px;
+  text-align: right;
+}
+
+.trace-total {
+  font-weight: 600;
+  padding-top: 4px;
+  border-top: 1px solid #ddd;
+  margin-top: 4px;
 }
