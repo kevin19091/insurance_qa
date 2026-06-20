@@ -116,3 +116,43 @@ class TestChatEndpoint:
             resp = client.post("/api/chat/abort")
             assert resp.status_code == 200
             assert resp.json() == {"status": "aborted"}
+
+
+@pytest.mark.slow
+class TestDevModeStream:
+    @pytest.mark.skipif(not _OPENAI_AVAILABLE, reason="OPENAI_API_KEY not set")
+    def test_dev_mode_emits_step_events(self) -> None:
+        from fastapi.testclient import TestClient
+
+        from src.main import app
+
+        with (
+            TestClient(app) as client,
+            client.stream("GET", "/api/chat/stream", params={"q": "What is the premium?", "mode": "dev"}) as resp,
+        ):
+            assert resp.status_code == 200
+            events: list[dict[str, str]] = []
+            for line in resp.iter_lines():
+                if not line:
+                    continue
+                if line.startswith("event: "):
+                    events.append({"event": line[7:], "data": ""})
+                elif line.startswith("data: ") and events:
+                    events[-1]["data"] = line[6:]
+
+            step_events = [e for e in events if e["event"] == "step"]
+            assert len(step_events) >= 4, f"Expected at least 4 step events, got {len(step_events)}"
+
+            # Check structure of first step event
+            first = json.loads(step_events[0]["data"])
+            assert "step" in first
+            assert first["status"] == "start"
+
+            last_step = json.loads(step_events[-1]["data"])
+            assert last_step["status"] == "complete"
+            assert "duration_ms" in last_step
+
+            # Step events should come before sources and tokens
+            first_step_idx = next(i for i, e in enumerate(events) if e["event"] == "step")
+            sources_idx = next(i for i, e in enumerate(events) if e["event"] == "sources")
+            assert first_step_idx < sources_idx, "Step events should precede sources"
