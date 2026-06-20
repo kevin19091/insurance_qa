@@ -211,6 +211,22 @@ class TestBuildRetrieverDispatch:
         index = build_index(PipelineConfig())
         retriever = build_retriever(index, top_k=5, config=config)
         assert isinstance(retriever, HybridRetriever)
+
+    @pytest.mark.slow
+    def test_reranker_enabled_wraps_with_reranking_retriever(self) -> None:
+        from src.pipeline.factory import build_retriever
+        from src.pipeline.retriever import IndexRetriever, RerankingRetriever
+
+        config = PipelineConfig.model_construct()
+        config.retrieval.mode = "dense"
+        config.reranker.enabled = True
+        config.reranker.model = "cross-encoder"
+        from src.pipeline.factory import build_index
+
+        index = build_index(PipelineConfig())
+        retriever = build_retriever(index, top_k=5, config=config)
+        assert isinstance(retriever, RerankingRetriever)
+        assert isinstance(retriever._retriever, IndexRetriever)
     def test_returns_top_k_nodes(self) -> None:
         from src.pipeline.retriever import BM25Retriever
 

@@ -21,6 +21,7 @@ from src.pipeline.retriever import (
     HybridRetriever,
     IndexRetriever,
     NullRetriever,
+    RerankingRetriever,
     extract_nodes_from_index,
 )
 from src.pipeline.rewriter import HyDEQueryRewriter, MultiQueryRewriter, NullQueryRewriter, StepBackRewriter
@@ -132,28 +133,42 @@ def build_retriever(
     if config is None:
         return IndexRetriever(index=index, top_k=top_k)
 
+    # Build inner retriever — with larger top_k if reranker is enabled
+    effective_top_k = config.reranker.max_input_chunks if config.reranker.enabled else top_k
+
     mode = config.retrieval.mode
     if mode == "dense":
-        return IndexRetriever(index=index, top_k=top_k)
-
-    nodes = extract_nodes_from_index(index)
-
-    if mode == "sparse":
-        return BM25Retriever(nodes=nodes, top_k=top_k)
-
-    if mode == "hybrid":
-        dense = IndexRetriever(index=index, top_k=top_k)
-        sparse = BM25Retriever(nodes=nodes, top_k=top_k)
-        return HybridRetriever(
+        inner = IndexRetriever(index=index, top_k=effective_top_k)
+    elif mode == "sparse":
+        nodes = extract_nodes_from_index(index)
+        inner = BM25Retriever(nodes=nodes, top_k=effective_top_k)
+    elif mode == "hybrid":
+        nodes = extract_nodes_from_index(index)
+        dense = IndexRetriever(index=index, top_k=effective_top_k)
+        sparse = BM25Retriever(nodes=nodes, top_k=effective_top_k)
+        inner = HybridRetriever(
             dense_retriever=dense,
             sparse_retriever=sparse,
-            top_k=top_k,
+            top_k=effective_top_k,
             dense_weight=config.retrieval.dense_weight,
             sparse_weight=config.retrieval.sparse_weight,
         )
+    else:
+        msg = f"Unknown retrieval mode: {mode}"
+        raise ValueError(msg)
 
-    msg = f"Unknown retrieval mode: {mode}"
-    raise ValueError(msg)
+    if config.reranker.enabled:
+        from src.pipeline.reranker import build_reranker
+
+        reranker = build_reranker(config)
+        return RerankingRetriever(
+            retriever=inner,
+            reranker=reranker,
+            max_input_chunks=config.reranker.max_input_chunks,
+            top_n=config.reranker.top_n,
+        )
+
+    return inner
 
 
 def build_rewriter(config: PipelineConfig, generator: Generator | None = None) -> QueryRewriter:

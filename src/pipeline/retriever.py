@@ -5,7 +5,7 @@ from llama_index.core.schema import NodeWithScore, QueryBundle, TextNode
 from rank_bm25 import BM25Okapi
 
 from src.observability import observe
-from src.pipeline import QueryRewriter
+from src.pipeline import QueryRewriter, Reranker
 from src.pipeline import Retriever as RetrieverABC
 
 
@@ -135,4 +135,24 @@ def retrieve_with_rewriting(
     return deduped
 
 
-__all__ = ["BM25Retriever", "IndexRetriever", "NullRetriever", "retrieve_with_rewriting"]
+class RerankingRetriever(RetrieverABC):
+    """Wraps a retriever with a reranker — fetches more nodes, re-ranks to top_n."""
+
+    def __init__(
+        self,
+        retriever: RetrieverABC,
+        reranker: Reranker,
+        max_input_chunks: int,
+        top_n: int,
+    ) -> None:
+        self._retriever = retriever
+        self._reranker = reranker
+        self._max_input_chunks = max_input_chunks
+        self._top_n = top_n
+
+    def retrieve(self, query: QueryBundle) -> list[NodeWithScore]:
+        nodes = self._retriever.retrieve(query)
+        return self._reranker.rerank(query.query_str, nodes, self._top_n)
+
+
+__all__ = ["BM25Retriever", "IndexRetriever", "NullRetriever", "RerankingRetriever", "retrieve_with_rewriting"]
