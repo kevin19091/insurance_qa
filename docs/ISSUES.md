@@ -42,6 +42,11 @@ Each issue is a thin, demonstrable end-to-end slice. Work sequentially — each 
 | 36 | Reranker implementations: Cohere, BGE-reranker, cross-encoder | AFK | #35 | Three classes implementing `Reranker` ABC. Cohere uses `co.rerank()` API. BGE-reranker and cross-encoder use `sentence_transformers.CrossEncoder`. `build_reranker` dispatch via `reranker.model`. |
 | 37 | RerankingRetriever wrapper + pipeline integration | AFK | #36 | Wraps any retriever with a reranker. When `reranker.enabled`, fetches `reranker.max_input_chunks` (20) nodes, re-ranks to `reranker.top_n` (5). Wired into `build_retriever`. API routes + eval use transparently. |
 | 38 | Execute M7 reranker sweep | AFK | #37 | Run 4 benchmarks: no-reranker vs Cohere vs BGE-reranker vs cross-encoder with max_input_chunks=20, top_n=5. Save to `benchmarks/M7{a,b,c,d}/`. |
+| 39 | Backend: instrument pipeline steps | AFK | #38 | Each pipeline step (query rewrite → retrieve → rerank → generate) emits SSE events with step name, timing (ms), and cost ($). Refactor `routes.py` streaming endpoint to be step-aware. Add step tracking to every component. |
+| 40 | Backend: dev mode API + strategy list | AFK | #39 | `GET /api/strategies` returns available strategies per component (filtered by API keys, implementation status). `GET /api/chat/stream?q=...&mode=dev` accepts per-request strategy overrides (retrieval mode, rewrite, reranker, top-k, LLM model). |
+| 41 | Frontend: pipeline visualization component | AFK | #40 | React component showing step-by-step pipeline: each step name, status (pending/running/done), duration bar, cost badge. Updates in real-time via SSE events. Reuses existing streaming infrastructure. |
+| 42 | Frontend: strategy override controls | AFK | #41 | Dropdowns for overridable strategies (retrieval mode, rewrite, reranker, top-k, LLM). Read-only info for fixed strategies (chunk strategy, embedding model). Strategy availability fetched from `/api/strategies`. |
+| 43 | Frontend: dev mode toggle + RAGAS scores | AFK | #42 | Toggle switch in UI to enable/disable developer mode. When on, shows pipeline visualization + controls + RAGAS scores at end of response. When off, current simple UI (input → answer). |
 
 ## Dependency Graph
 
@@ -68,6 +73,10 @@ Each issue is a thin, demonstrable end-to-end slice. Work sequentially — each 
 3 ──→ 12 (can run parallel with 4-8)
 
 6 ──→ 11 (can start after 6)
+
+11 ──→ 39 ──→ 40 ──→ 41
+               │
+               42 ──→ 43
 ```
 
 ## Post-M1 Milestones
