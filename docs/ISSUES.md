@@ -39,6 +39,9 @@ Each issue is a thin, demonstrable end-to-end slice. Work sequentially — each 
 | 33 | Hybrid retriever (dense + sparse fusion) | AFK | #32 | `HybridRetriever` combining `IndexRetriever` + `BM25Retriever` with reciprocal rank fusion. Uses `retrieval.sparse_weight` / `retrieval.dense_weight` from config. |
 | 34 | Update `build_retriever` to dispatch by `retrieval.mode` | AFK | #33 | `build_retriever` accepts config, dispatches to IndexRetriever (dense), BM25Retriever (sparse), or HybridRetriever (hybrid). |
 | 35 | Execute M6 retrieval mode sweep | AFK | #34 | Run 3 benchmarks: dense vs sparse vs hybrid. Save to `benchmarks/M6{a,b,c}/`. |
+| 36 | Reranker implementations: Cohere, BGE-reranker, cross-encoder | AFK | #35 | Three classes implementing `Reranker` ABC. Cohere uses `co.rerank()` API. BGE-reranker and cross-encoder use `sentence_transformers.CrossEncoder`. `build_reranker` dispatch via `reranker.model`. |
+| 37 | RerankingRetriever wrapper + pipeline integration | AFK | #36 | Wraps any retriever with a reranker. When `reranker.enabled`, fetches `reranker.max_input_chunks` (20) nodes, re-ranks to `reranker.top_n` (5). Wired into `build_retriever`. API routes + eval use transparently. |
+| 38 | Execute M7 reranker sweep | AFK | #37 | Run 4 benchmarks: no-reranker vs Cohere vs BGE-reranker vs cross-encoder with max_input_chunks=20, top_n=5. Save to `benchmarks/M7{a,b,c,d}/`. |
 
 ## Dependency Graph
 
@@ -58,7 +61,9 @@ Each issue is a thin, demonstrable end-to-end slice. Work sequentially — each 
                                                                                                                 │
                                                                                                                  28 ──→ 29 ──→ 30 ──→ 31
                                                                                                                                        │
-                                                                                                                                       32 ──→ 33 ──→ 34 ──→ 35
+                                                                                                                                        32 ──→ 33 ──→ 34 ──→ 35
+                                                                                                                                                              │
+                                                                                                                                                              36 ──→ 37 ──→ 38
 
 3 ──→ 12 (can run parallel with 4-8)
 
@@ -68,7 +73,6 @@ Each issue is a thin, demonstrable end-to-end slice. Work sequentially — each 
 ## Post-M1 Milestones
 
 To be broken into issues after M1 lands:
-- M7: Reranker impact
 - M8: Top-k sweep
 - M9: Caching
 - M10: Best config + GPT-4o
