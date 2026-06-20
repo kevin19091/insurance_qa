@@ -1,0 +1,35 @@
+# M7b — BGE-reranker
+
+chunk:
+  strategy: "recursive"
+  chunk_size: 500
+  chunk_overlap: 50
+
+embedding:
+  model: "bge-large"
+  dimension: 1024
+
+retrieval:
+  mode: "dense"
+  top_k: 5
+
+reranker:
+  enabled: true
+  model: "bge-reranker"
+  top_n: 5
+  max_input_chunks: 20
+
+query_rewrite:
+  enabled: false
+  strategy: "hyde"
+
+llm:
+  model: "gpt-4o-mini"
+  temperature: 0.0
+  max_tokens: 1024
+
+cache:
+  enabled: false
+
+seed: 42
+prompt_version: "v1"

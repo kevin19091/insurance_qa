@@ -1,0 +1,11 @@
+{
+  "milestone": "M7c",
+  "timestamp": "2026-06-20T15:11:23.332971+00:00",
+  "config_path": "benchmarks/M7c/config.yaml",
+  "config_override": null,
+  "rebuild": false,
+  "seed": 42,
+  "prompt_version": "v1",
+  "duration_seconds": 53.46,
+  "index_node_count": 37
+}
