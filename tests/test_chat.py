@@ -156,3 +156,49 @@ class TestDevModeStream:
             first_step_idx = next(i for i, e in enumerate(events) if e["event"] == "step")
             sources_idx = next(i for i, e in enumerate(events) if e["event"] == "sources")
             assert first_step_idx < sources_idx, "Step events should precede sources"
+
+
+class TestDevModeAPI:
+    def test_strategies_endpoint_returns_available_strategies(self) -> None:
+        from fastapi.testclient import TestClient
+
+        from src.main import app
+
+        with TestClient(app) as client:
+            resp = client.get("/api/strategies")
+            assert resp.status_code == 200
+            data = resp.json()
+            assert "retrieval" in data
+            assert "query_rewrite" in data
+            assert "reranker" in data
+            assert "llm" in data
+            assert "chunk" in data
+            assert "embedding" in data
+            assert data["chunk"]["overridable"] is False
+            assert data["embedding"]["overridable"] is False
+            assert "dense" in data["retrieval"]["options"]
+            assert "sparse" in data["retrieval"]["options"]
+            assert "hyde" in data["query_rewrite"]["options"]
+
+    def test_dev_stream_accepts_override_params(self) -> None:
+        from fastapi.testclient import TestClient
+
+        from src.main import app
+
+        with (
+            TestClient(app) as client,
+            client.stream(
+                "GET", "/api/chat/stream",
+                params={"q": "What is premium?", "mode": "dev", "top_k": "3"},
+            ) as resp,
+        ):
+            assert resp.status_code == 200
+            events: list[dict[str, str]] = []
+            for line in resp.iter_lines():
+                if not line:
+                    continue
+                if line.startswith("event: "):
+                    events.append({"event": line[7:], "data": ""})
+                elif line.startswith("data: ") and events:
+                    events[-1]["data"] = line[6:]
+            assert any(e["event"] == "step" for e in events)

@@ -2,6 +2,7 @@
 
 import asyncio
 import json
+import os
 import time
 from collections.abc import AsyncGenerator
 from contextlib import suppress
@@ -15,6 +16,59 @@ from src.pipeline.factory import build_generator, build_retriever, build_rewrite
 from src.pipeline.retriever import retrieve_with_rewriting
 
 router = APIRouter(prefix="/api")
+
+
+def _available_strategies() -> dict[str, Any]:
+    return {
+        "retrieval": {
+            "options": ["dense", "sparse", "hybrid"],
+            "default": "dense",
+            "overridable": True,
+        },
+        "query_rewrite": {
+            "options": ["none", "hyde", "multi-query", "step-back"],
+            "default": "none",
+            "overridable": True,
+        },
+        "reranker": {
+            "options": (
+                ["none", "bge-reranker", "cross-encoder"]
+                + (["cohere"] if os.environ.get("COHERE_API_KEY") else [])
+            ),
+            "default": "none",
+            "overridable": True,
+        },
+        "llm": {
+            "options": (
+                ["gpt-4o-mini"]
+                + (["gpt-4o"] if os.environ.get("OPENAI_API_KEY") else [])
+                + (["claude-3.5-sonnet"] if os.environ.get("ANTHROPIC_API_KEY") else [])
+                + (["gemini-2.0-flash"] if os.environ.get("GOOGLE_API_KEY") else [])
+            ),
+            "default": "gpt-4o-mini",
+            "overridable": True,
+        },
+        "top_k": {
+            "options": list(range(1, 31)),
+            "default": 5,
+            "overridable": True,
+        },
+        "chunk": {
+            "options": ["recursive", "sentence", "semantic", "agentic"],
+            "default": "recursive",
+            "overridable": False,
+        },
+        "embedding": {
+            "options": ["bge-large", "text-embedding-3-small", "cohere-embed-v3", "e5-large"],
+            "default": "bge-large",
+            "overridable": False,
+        },
+    }
+
+
+@router.get("/strategies")
+async def strategies() -> dict[str, Any]:
+    return _available_strategies()
 
 
 @router.get("/health")
@@ -176,13 +230,38 @@ async def chat_stream(
     request: Request,
     q: str = Query(..., description="User question"),
     mode: str = Query("normal", description="'dev' for step-by-step trace"),
+    retrieval_mode: str | None = Query(None, description="Override retrieval mode"),
+    top_k: int | None = Query(None, description="Override top-k"),
+    llm_model: str | None = Query(None, description="Override LLM model"),
+    rewrite_strategy: str | None = Query(None, description="Override query rewrite strategy"),
+    reranker_model: str | None = Query(None, description="Override reranker model"),
 ) -> EventSourceResponse:
     index = getattr(request.app.state, "index", None)
     if index is None:
         return EventSourceResponse(_error_stream("No index available"))
 
     config = request.app.state.config
-    retriever = build_retriever(index=index, top_k=5)
+
+    if retrieval_mode is not None:
+        config.retrieval.mode = retrieval_mode  # type: ignore[assignment]
+    if top_k is not None:
+        config.retrieval.top_k = top_k
+    if llm_model is not None:
+        config.llm.model = llm_model  # type: ignore[assignment]
+    if rewrite_strategy is not None:
+        if rewrite_strategy == "none":
+            config.query_rewrite.enabled = False
+        else:
+            config.query_rewrite.enabled = True
+            config.query_rewrite.strategy = rewrite_strategy  # type: ignore[assignment]
+    if reranker_model is not None:
+        if reranker_model == "none":
+            config.reranker.enabled = False
+        else:
+            config.reranker.enabled = True
+            config.reranker.model = reranker_model  # type: ignore[assignment]
+
+    retriever = build_retriever(index=index, top_k=config.retrieval.top_k)
     generator_inst = build_generator(config)
     rewriter = build_rewriter(config, generator=generator_inst)
     dev_mode = mode == "dev"
