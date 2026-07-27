@@ -67,6 +67,12 @@ class Generator(ABC):
         """Return the underlying LLM instance for direct use (e.g. by rewriters)."""
         ...
 
+    @property
+    @abstractmethod
+    def usage(self) -> dict[str, int]:
+        """Return cumulative token usage: prompt_tokens, completion_tokens, total_tokens."""
+        ...
+
 
 class QueryRewriter(ABC):
     """Rewrite a user query to improve retrieval quality.

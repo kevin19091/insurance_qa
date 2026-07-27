@@ -35,7 +35,7 @@ class IndexRetriever(RetrieverABC):
 
     @observe(as_type="retriever")
     def retrieve(self, query: QueryBundle) -> list[NodeWithScore]:
-        return self._retriever.retrieve(query)
+        return self._retriever.retrieve(query)  # type: ignore[no-any-return]
 
 
 class BM25Retriever(RetrieverABC):
@@ -57,10 +57,7 @@ class BM25Retriever(RetrieverABC):
         if not any(s > 0 for _, s in top):
             return []
         max_score = max(s for _, s in top if s > 0)
-        return [
-            NodeWithScore(node=self._nodes[i], score=float(s) / max_score)
-            for i, s in top
-        ]
+        return [NodeWithScore(node=self._nodes[i], score=float(s) / max_score) for i, s in top]
 
 
 class NullRetriever(RetrieverABC):
@@ -155,4 +152,10 @@ class RerankingRetriever(RetrieverABC):
         return self._reranker.rerank(query.query_str, nodes, self._top_n)
 
 
-__all__ = ["BM25Retriever", "IndexRetriever", "NullRetriever", "RerankingRetriever", "retrieve_with_rewriting"]
+__all__ = [
+    "BM25Retriever",
+    "IndexRetriever",
+    "NullRetriever",
+    "RerankingRetriever",
+    "retrieve_with_rewriting",
+]

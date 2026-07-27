@@ -1,11 +1,11 @@
 {
   "model": "gpt-4o-mini",
-  "prompt_tokens": 19342,
-  "completion_tokens": 1265,
-  "total_tokens": 20607,
+  "prompt_tokens": 18609,
+  "completion_tokens": 1254,
+  "total_tokens": 19863,
   "cost": {
-    "prompt_cost_usd": 0.002901,
-    "completion_cost_usd": 0.000379,
-    "total_cost_usd": 0.003281
+    "prompt_cost_usd": 0.002791,
+    "completion_cost_usd": 0.000376,
+    "total_cost_usd": 0.003168
   }
 }

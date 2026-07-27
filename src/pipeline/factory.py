@@ -24,7 +24,12 @@ from src.pipeline.retriever import (
     RerankingRetriever,
     extract_nodes_from_index,
 )
-from src.pipeline.rewriter import HyDEQueryRewriter, MultiQueryRewriter, NullQueryRewriter, StepBackRewriter
+from src.pipeline.rewriter import (
+    HyDEQueryRewriter,
+    MultiQueryRewriter,
+    NullQueryRewriter,
+    StepBackRewriter,
+)
 
 # BGE-large-en-v1.5 (1024-dim, English)
 _BGE_MODEL = "BAAI/bge-large-en-v1.5"
@@ -96,7 +101,7 @@ def build_index(config: PipelineConfig, force_rebuild: bool = False) -> VectorSt
         return VectorStoreIndex(
             nodes=nodes,
             storage_context=storage_context,
-            embed_model=raw_embed_model,  # type: ignore[arg-type]
+            embed_model=raw_embed_model,
         )
 
     chroma_collection = chroma_client.get_collection(collection_name)
@@ -104,7 +109,7 @@ def build_index(config: PipelineConfig, force_rebuild: bool = False) -> VectorSt
     embedder = build_embedder(config)
     return VectorStoreIndex.from_vector_store(
         vector_store=vector_store,
-        embed_model=embedder.raw_model,  # type: ignore[arg-type]
+        embed_model=embedder.raw_model,
     )
 
 
@@ -137,6 +142,7 @@ def build_retriever(
     effective_top_k = config.reranker.max_input_chunks if config.reranker.enabled else top_k
 
     mode = config.retrieval.mode
+    inner: Retriever
     if mode == "dense":
         inner = IndexRetriever(index=index, top_k=effective_top_k)
     elif mode == "sparse":

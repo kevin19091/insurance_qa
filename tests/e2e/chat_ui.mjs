@@ -52,7 +52,7 @@ async function main() {
     console.assert(disc.includes("AI-generated"), `disclaimer: ${disc}`);
 
     // Send a question
-    await page.fill("input", "What is the premium?");
+    await page.fill(".input-bar input[type=text]", "What is the premium?");
     await page.click("button[type=submit]");
 
     // Wait for response to finish streaming
@@ -68,12 +68,51 @@ async function main() {
     );
     console.log("Answer ok:", answer.slice(0, 80));
 
-    // Check sources (M0 has no retrieval, so sources may be empty)
+    // Check sources
     const sourcesSummary = await page.$("details.sources summary");
     if (sourcesSummary) {
       await sourcesSummary.click();
       const pageNum = await page.textContent(".source-item .page");
       console.assert(pageNum.includes("Page"), `page: ${pageNum}`);
+    }
+
+    // Check dev mode toggle exists
+    const toggle = await page.$(".dev-toggle");
+    console.assert(toggle !== null, "Dev mode toggle should exist");
+    console.log("Dev mode toggle found");
+
+    // Enable dev mode
+    await page.click(".dev-toggle input");
+    await page.waitForSelector(".dev-panel");
+    const panel = await page.$(".dev-panel");
+    console.assert(panel !== null, "Dev panel should appear after toggle");
+    console.log("Dev panel visible");
+
+    // Check strategy controls exist
+    const controls = await page.$$(".control-group");
+    console.assert(controls.length >= 5, `Expected at least 5 control groups, got ${controls.length}`);
+    console.log(`Strategy controls: ${controls.length}`);
+
+    // Send question in dev mode
+    await page.fill(".input-bar input[type=text]", "What is the maximum coverage amount?");
+    await page.click("button[type=submit]");
+    await page.waitForFunction(
+      () => !document.querySelector(".cursor"),
+      { timeout: 60000 }
+    );
+
+    // Check pipeline steps appeared
+    const steps = await page.$$(".step.complete");
+    console.assert(steps.length >= 2, `Expected at least 2 completed steps, got ${steps.length}`);
+    console.log(`Pipeline steps completed: ${steps.length}`);
+
+    // Check pipeline trace summary
+    const traceSummary = await page.$(".trace-summary");
+    if (traceSummary) {
+      await traceSummary.click();
+      const traceTotal = await page.textContent(".trace-total");
+      console.assert(traceTotal.includes("ms"), `trace total: ${traceTotal}`);
+      console.log("Pipeline trace summary found");
     }
 
     console.log("PASS");

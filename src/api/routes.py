@@ -81,27 +81,31 @@ async def health(request: Request) -> dict[str, str | int]:
     return {"status": "ok", "node_count": node_count}
 
 
-def _step_event(step: str, status: str, duration_ms: float = 0, cost_usd: float = 0) -> dict[str, str]:
+def _step_event(
+    step: str, status: str, duration_ms: float = 0, cost_usd: float = 0
+) -> dict[str, str]:
     return {
         "event": "step",
-        "data": json.dumps({
-            "step": step,
-            "status": status,
-            "duration_ms": round(duration_ms, 1),
-            "cost_usd": cost_usd,
-        }),
+        "data": json.dumps(
+            {
+                "step": step,
+                "status": status,
+                "duration_ms": round(duration_ms, 1),
+                "cost_usd": cost_usd,
+            }
+        ),
     }
 
 
 def _estimate_cost(model: str, prompt_tokens: int, completion_tokens: int) -> float:
-    COST_PER_1K: dict[str, float] = {
+    cost_per_1k: dict[str, float] = {
         "gpt-4o-mini": 0.000150,
         "gpt-4o": 0.0025,
         "claude-3.5-sonnet": 0.003,
         "claude-3-opus": 0.015,
         "gemini-2.0-flash": 0.0001,
     }
-    rate = COST_PER_1K.get(model, 0.000150)
+    rate = cost_per_1k.get(model, 0.000150)
     return ((prompt_tokens / 1000) * rate) + ((completion_tokens / 1000) * rate * 2)
 
 
@@ -128,7 +132,9 @@ async def chat(
     else:
         nodes = retriever.retrieve(QueryBundle(q))
     retrieval_ms = (time.time() - t0) * 1000
-    pipeline_trace.append({"step": "retrieve", "duration_ms": round(retrieval_ms, 1), "cost_usd": 0.0})
+    pipeline_trace.append(
+        {"step": "retrieve", "duration_ms": round(retrieval_ms, 1), "cost_usd": 0.0}
+    )
 
     t0 = time.time()
     answer = generator.generate(q, nodes)
@@ -138,7 +144,9 @@ async def chat(
         generator.usage.get("prompt_tokens", 0),
         generator.usage.get("completion_tokens", 0),
     )
-    pipeline_trace.append({"step": "generate", "duration_ms": round(gen_ms, 1), "cost_usd": gen_cost})
+    pipeline_trace.append(
+        {"step": "generate", "duration_ms": round(gen_ms, 1), "cost_usd": gen_cost}
+    )
 
     sources = [
         {
@@ -190,7 +198,9 @@ async def _stream_events_with_dev(
         retrieval_ms = (time.time() - t0) * 1000
         if dev_mode:
             yield _step_event("retrieve", "complete", retrieval_ms)
-            steps.append({"step": "retrieve", "duration_ms": round(retrieval_ms, 1), "cost_usd": 0.0})
+            steps.append(
+                {"step": "retrieve", "duration_ms": round(retrieval_ms, 1), "cost_usd": 0.0}
+            )
 
         sources_data = _build_sources(actual_nodes)
         yield {"event": "sources", "data": json.dumps({"sources": sources_data})}
@@ -211,7 +221,9 @@ async def _stream_events_with_dev(
         )
         if dev_mode:
             yield _step_event("generate", "complete", gen_ms, gen_cost)
-            steps.append({"step": "generate", "duration_ms": round(gen_ms, 1), "cost_usd": gen_cost})
+            steps.append(
+                {"step": "generate", "duration_ms": round(gen_ms, 1), "cost_usd": gen_cost}
+            )
 
         yield {"event": "done", "data": "[DONE]"}
         if dev_mode and steps:
@@ -240,28 +252,28 @@ async def chat_stream(
     if index is None:
         return EventSourceResponse(_error_stream("No index available"))
 
-    config = request.app.state.config
+    config = request.app.state.config.model_copy(deep=True)
 
     if retrieval_mode is not None:
-        config.retrieval.mode = retrieval_mode  # type: ignore[assignment]
+        config.retrieval.mode = retrieval_mode
     if top_k is not None:
         config.retrieval.top_k = top_k
     if llm_model is not None:
-        config.llm.model = llm_model  # type: ignore[assignment]
+        config.llm.model = llm_model
     if rewrite_strategy is not None:
         if rewrite_strategy == "none":
             config.query_rewrite.enabled = False
         else:
             config.query_rewrite.enabled = True
-            config.query_rewrite.strategy = rewrite_strategy  # type: ignore[assignment]
+            config.query_rewrite.strategy = rewrite_strategy
     if reranker_model is not None:
         if reranker_model == "none":
             config.reranker.enabled = False
         else:
             config.reranker.enabled = True
-            config.reranker.model = reranker_model  # type: ignore[assignment]
+            config.reranker.model = reranker_model
 
-    retriever = build_retriever(index=index, top_k=config.retrieval.top_k)
+    retriever = build_retriever(index=index, top_k=config.retrieval.top_k, config=config)
     generator_inst = build_generator(config)
     rewriter = build_rewriter(config, generator=generator_inst)
     dev_mode = mode == "dev"

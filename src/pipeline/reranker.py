@@ -29,7 +29,9 @@ class CohereReranker(Reranker):
         self._model = model
         self._top_n = top_n
 
-    def rerank(self, query: str, nodes: list[NodeWithScore], top_n: int | None = None) -> list[NodeWithScore]:
+    def rerank(
+        self, query: str, nodes: list[NodeWithScore], top_n: int | None = None
+    ) -> list[NodeWithScore]:
         k = top_n or self._top_n
         docs = [cast(TextNode, n.node).text for n in nodes]
         results = self._client.rerank(model=self._model, query=query, documents=docs, top_k=k)
@@ -48,7 +50,9 @@ class CrossEncoderReranker(Reranker):
         self._model = CrossEncoder(model_name)
         self._top_n = top_n
 
-    def rerank(self, query: str, nodes: list[NodeWithScore], top_n: int | None = None) -> list[NodeWithScore]:
+    def rerank(
+        self, query: str, nodes: list[NodeWithScore], top_n: int | None = None
+    ) -> list[NodeWithScore]:
         k = top_n or self._top_n
         texts = [cast(TextNode, n.node).text for n in nodes]
         pairs = [[query, t] for t in texts]
@@ -57,14 +61,11 @@ class CrossEncoderReranker(Reranker):
         indexed.sort(key=lambda x: x[1], reverse=True)
         top = indexed[:k]
         max_score = max(s for _, s in top) if top else 1.0
-        return [
-            NodeWithScore(node=nodes[i].node, score=float(s) / max_score)
-            for i, s in top
-        ]
+        return [NodeWithScore(node=nodes[i].node, score=float(s) / max_score) for i, s in top]
 
 
-def build_reranker(config: Any) -> Reranker | None:
-    """Build a Reranker from config. Returns None when disabled."""
+def build_reranker(config: Any) -> Reranker:
+    """Build a Reranker from config. Returns a NullReranker when disabled."""
     if not config.reranker.enabled:
         return NullReranker()
 

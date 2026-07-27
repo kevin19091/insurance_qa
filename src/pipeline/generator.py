@@ -86,7 +86,7 @@ class OpenAIGenerator(GeneratorABC):
         return response.message.content or ""
 
     @observe(as_type="generation")
-    async def stream(  # type: ignore[override]
+    async def stream(
         self, query: str, context_nodes: list[NodeWithScore]
     ) -> AsyncGenerator[str, None]:
         messages = _build_prompt(query, context_nodes)
@@ -123,7 +123,7 @@ class ClaudeGenerator(GeneratorABC):
         return response.message.content or ""
 
     @observe(as_type="generation")
-    async def stream(  # type: ignore[override]
+    async def stream(
         self, query: str, context_nodes: list[NodeWithScore]
     ) -> AsyncGenerator[str, None]:
         messages = _build_prompt(query, context_nodes)
@@ -160,7 +160,7 @@ class GeminiGenerator(GeneratorABC):
         return response.message.content or ""
 
     @observe(as_type="generation")
-    async def stream(  # type: ignore[override]
+    async def stream(
         self, query: str, context_nodes: list[NodeWithScore]
     ) -> AsyncGenerator[str, None]:
         messages = _build_prompt(query, context_nodes)
