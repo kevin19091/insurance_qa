@@ -1,7 +1,10 @@
 """Retrieval strategy implementations and rewriting-aware retrieval."""
 
+from typing import cast
+
 from llama_index.core import VectorStoreIndex
 from llama_index.core.schema import NodeWithScore, QueryBundle, TextNode
+from llama_index.vector_stores.chroma import ChromaVectorStore
 from rank_bm25 import BM25Okapi
 
 from src.observability import observe
@@ -19,11 +22,11 @@ def extract_nodes_from_index(index: VectorStoreIndex) -> tuple[TextNode, ...]:
     if nodes_dict:
         return tuple(nodes_dict.values())
 
-    col = index.vector_store._collection
+    col = cast(ChromaVectorStore, index.vector_store)._collection
     result = col.get()
     nodes: list[TextNode] = []
     for i, doc_id in enumerate(result["ids"]):
-        text = result["documents"][i] or ""
+        text = result["documents"][i] or "" if result["documents"] else ""
         meta = result["metadatas"][i] if result["metadatas"] else {}
         nodes.append(TextNode(text=text, id_=doc_id, metadata=meta))
     return tuple(nodes)
@@ -35,7 +38,7 @@ class IndexRetriever(RetrieverABC):
 
     @observe(as_type="retriever")
     def retrieve(self, query: QueryBundle) -> list[NodeWithScore]:
-        return self._retriever.retrieve(query)  # type: ignore[no-any-return]
+        return self._retriever.retrieve(query)
 
 
 class BM25Retriever(RetrieverABC):

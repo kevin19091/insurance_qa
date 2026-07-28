@@ -59,7 +59,11 @@ class Generator(ABC):
     @abstractmethod
     async def stream(
         self, query: str, context_nodes: list[NodeWithScore]
-    ) -> AsyncGenerator[str, None]: ...
+    ) -> AsyncGenerator[str, None]:
+        # `yield` (never reached — subclasses override this) makes mypy treat this
+        # abstract method as an async generator function, not a coroutine function,
+        # matching how concrete implementations are actually shaped.
+        yield ""
 
     @property
     @abstractmethod

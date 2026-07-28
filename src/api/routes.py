@@ -13,7 +13,7 @@ from llama_index.core.schema import QueryBundle, TextNode
 from sse_starlette.sse import EventSourceResponse
 
 from src.pipeline.factory import build_generator, build_retriever, build_rewriter
-from src.pipeline.retriever import retrieve_with_rewriting
+from src.pipeline.serving.retriever import retrieve_with_rewriting
 
 router = APIRouter(prefix="/api")
 

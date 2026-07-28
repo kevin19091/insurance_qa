@@ -26,7 +26,7 @@ from ragas.metrics import (
 
 from src.config import PipelineConfig
 from src.pipeline.factory import build_generator, build_index, build_retriever, build_rewriter
-from src.pipeline.retriever import retrieve_with_rewriting
+from src.pipeline.serving.retriever import retrieve_with_rewriting
 
 load_dotenv()
 

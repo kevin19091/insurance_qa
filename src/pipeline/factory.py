@@ -1,10 +1,10 @@
-"""Pipeline factory — builds RAG components from a PipelineConfig.
-
-Each method returns an instance of the corresponding interface.
-Swapping strategies = changing the config → factory returns a different implementation.
+"""DEPRECATED — kept only so existing callers (main.py, run.py, some tests)
+keep working while they're migrated to run_ingestion()/load_index(). Do not
+add new usages; new code should import from src.pipeline.common,
+src.pipeline.ingestion, or src.pipeline.serving directly.
 """
 
-from typing import Any, cast
+from typing import cast
 
 import chromadb
 from llama_index.core import StorageContext, VectorStoreIndex
@@ -12,51 +12,9 @@ from llama_index.core.embeddings import BaseEmbedding
 from llama_index.vector_stores.chroma import ChromaVectorStore
 
 from src.config import PipelineConfig
-from src.pipeline import Chunker, Generator, Parser, QueryRewriter, Retriever
 from src.pipeline.common.embedder import build_embedder
-from src.pipeline.generator import ClaudeGenerator, GeminiGenerator, OpenAIGenerator
-from src.pipeline.ingestion.chunker import (
-    AgenticChunker,
-    RecursiveChunker,
-    SemanticChunker,
-    SentenceChunker,
-)
-from src.pipeline.ingestion.parser import PyMuPDFParser
-from src.pipeline.retriever import (
-    BM25Retriever,
-    HybridRetriever,
-    IndexRetriever,
-    NullRetriever,
-    RerankingRetriever,
-    extract_nodes_from_index,
-)
-from src.pipeline.rewriter import (
-    HyDEQueryRewriter,
-    MultiQueryRewriter,
-    NullQueryRewriter,
-    StepBackRewriter,
-)
-
-
-def build_parser(config: PipelineConfig) -> Parser:
-    return PyMuPDFParser()
-
-
-def build_chunker(config: PipelineConfig, embed_model: Any | None = None) -> Chunker:
-    strategy = config.chunk.strategy
-    kw: dict[str, Any] = dict(
-        chunk_size=config.chunk.chunk_size, chunk_overlap=config.chunk.chunk_overlap
-    )
-    if strategy == "recursive":
-        return RecursiveChunker(**kw)
-    if strategy == "sentence":
-        return SentenceChunker(**kw)
-    if strategy == "semantic":
-        return SemanticChunker(**kw, embed_model=embed_model)
-    if strategy == "agentic":
-        return AgenticChunker(**kw, embed_model=embed_model)
-    msg = f"Unknown chunk strategy: {strategy}"
-    raise ValueError(msg)
+from src.pipeline.ingestion.pipeline import build_chunker, build_parser
+from src.pipeline.serving.factory import build_generator, build_retriever, build_rewriter
 
 
 def build_index(config: PipelineConfig, force_rebuild: bool = False) -> VectorStoreIndex:
@@ -77,7 +35,7 @@ def build_index(config: PipelineConfig, force_rebuild: bool = False) -> VectorSt
         parser = build_parser(config)
         chunker = build_chunker(config, embed_model=raw_embed_model)
 
-        docs = parser.parse("data/max-life-group-credit-life-secure-policy-document-v1.pdf")
+        docs = parser.parse(config.ingestion.source_pdf)
         nodes = chunker.chunk(docs)
 
         chroma_collection = chroma_client.create_collection(collection_name)
@@ -99,85 +57,12 @@ def build_index(config: PipelineConfig, force_rebuild: bool = False) -> VectorSt
     )
 
 
-def build_generator(config: PipelineConfig) -> Generator:
-    model: str = config.llm.model
-    temperature: float = config.llm.temperature
-    max_tokens: int = config.llm.max_tokens
-    if model.startswith("gpt"):
-        return OpenAIGenerator(model=model, temperature=temperature, max_tokens=max_tokens)
-    if model.startswith("claude"):
-        return ClaudeGenerator(model=model, temperature=temperature, max_tokens=max_tokens)
-    if model.startswith("gemini"):
-        return GeminiGenerator(model=model, temperature=temperature, max_tokens=max_tokens)
-    msg = f"Unknown LLM model: {model}"
-    raise ValueError(msg)
-
-
-def build_retriever(
-    index: VectorStoreIndex,
-    top_k: int,
-    config: PipelineConfig | None = None,
-) -> Retriever:
-    if top_k == 0:
-        return NullRetriever()
-
-    if config is None:
-        return IndexRetriever(index=index, top_k=top_k)
-
-    # Build inner retriever — with larger top_k if reranker is enabled
-    effective_top_k = config.reranker.max_input_chunks if config.reranker.enabled else top_k
-
-    mode = config.retrieval.mode
-    inner: Retriever
-    if mode == "dense":
-        inner = IndexRetriever(index=index, top_k=effective_top_k)
-    elif mode == "sparse":
-        nodes = extract_nodes_from_index(index)
-        inner = BM25Retriever(nodes=nodes, top_k=effective_top_k)
-    elif mode == "hybrid":
-        nodes = extract_nodes_from_index(index)
-        dense = IndexRetriever(index=index, top_k=effective_top_k)
-        sparse = BM25Retriever(nodes=nodes, top_k=effective_top_k)
-        inner = HybridRetriever(
-            dense_retriever=dense,
-            sparse_retriever=sparse,
-            top_k=effective_top_k,
-            dense_weight=config.retrieval.dense_weight,
-            sparse_weight=config.retrieval.sparse_weight,
-        )
-    else:
-        msg = f"Unknown retrieval mode: {mode}"
-        raise ValueError(msg)
-
-    if config.reranker.enabled:
-        from src.pipeline.reranker import build_reranker
-
-        reranker = build_reranker(config)
-        return RerankingRetriever(
-            retriever=inner,
-            reranker=reranker,
-            max_input_chunks=config.reranker.max_input_chunks,
-            top_n=config.reranker.top_n,
-        )
-
-    return inner
-
-
-def build_rewriter(config: PipelineConfig, generator: Generator | None = None) -> QueryRewriter:
-    if not config.query_rewrite.enabled:
-        return NullQueryRewriter()
-
-    if generator is None:
-        msg = "Generator is required for non-null query rewriters"
-        raise ValueError(msg)
-
-    strategy = config.query_rewrite.strategy
-    if strategy == "hyde":
-        return HyDEQueryRewriter(generator)
-    if strategy == "step-back":
-        return StepBackRewriter(generator)
-    if strategy == "multi-query":
-        return MultiQueryRewriter(generator)
-
-    msg = f"Unknown query rewrite strategy: {strategy}"
-    raise ValueError(msg)
+__all__ = [
+    "build_chunker",
+    "build_embedder",
+    "build_generator",
+    "build_index",
+    "build_parser",
+    "build_retriever",
+    "build_rewriter",
+]

@@ -6,7 +6,7 @@ import pytest
 from llama_index.core.llms import MessageRole
 from llama_index.core.schema import NodeWithScore, TextNode
 
-from src.pipeline.generator import _build_prompt
+from src.pipeline.serving.generator import _build_prompt
 
 _GOOGLE_API_AVAILABLE = bool(os.environ.get("GOOGLE_API_KEY"))
 
@@ -68,14 +68,14 @@ class TestBuildPrompt:
 
 class TestUsageTracking:
     def test_usage_starts_at_zero(self) -> None:
-        from src.pipeline.generator import ClaudeGenerator, OpenAIGenerator
+        from src.pipeline.serving.generator import ClaudeGenerator, OpenAIGenerator
 
         gens = [
             OpenAIGenerator(model="gpt-4o-mini", temperature=0, max_tokens=1024),
             ClaudeGenerator(model="claude-3-haiku", temperature=0, max_tokens=1024),
         ]
         for gen in gens:
-            assert gen.usage == {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}  # type: ignore[attr-defined]
+            assert gen.usage == {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}
 
 
 class TestFactoryDispatch:
@@ -85,25 +85,25 @@ class TestFactoryDispatch:
 
         config = PipelineConfig(llm=LLMConfig(model=model))  # type: ignore[arg-type]
         gen = build_generator(config)
-        assert isinstance(gen, expected_cls), (
-            f"Expected {expected_cls.__name__} for {model}, got {type(gen).__name__}"
-        )
+        assert isinstance(
+            gen, expected_cls
+        ), f"Expected {expected_cls.__name__} for {model}, got {type(gen).__name__}"
 
     def test_openai_models(self) -> None:
-        from src.pipeline.generator import OpenAIGenerator
+        from src.pipeline.serving.generator import OpenAIGenerator
 
         self._check("gpt-4o-mini", OpenAIGenerator)
         self._check("gpt-4o", OpenAIGenerator)
 
     def test_claude_models(self) -> None:
-        from src.pipeline.generator import ClaudeGenerator
+        from src.pipeline.serving.generator import ClaudeGenerator
 
         self._check("claude-3.5-sonnet", ClaudeGenerator)
         self._check("claude-3-haiku", ClaudeGenerator)
 
     @pytest.mark.skipif(not _GOOGLE_API_AVAILABLE, reason="GOOGLE_API_KEY not set")
     def test_gemini_models(self) -> None:
-        from src.pipeline.generator import GeminiGenerator
+        from src.pipeline.serving.generator import GeminiGenerator
 
         self._check("gemini-2.0-flash", GeminiGenerator)
         self._check("gemini-1.5-pro", GeminiGenerator)

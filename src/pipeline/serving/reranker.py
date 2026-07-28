@@ -34,7 +34,7 @@ class CohereReranker(Reranker):
     ) -> list[NodeWithScore]:
         k = top_n or self._top_n
         docs = [cast(TextNode, n.node).text for n in nodes]
-        results = self._client.rerank(model=self._model, query=query, documents=docs, top_k=k)
+        results = self._client.rerank(model=self._model, query=query, documents=docs, top_n=k)
         return [
             NodeWithScore(node=nodes[r.index].node, score=r.relevance_score)
             for r in results.results

@@ -1,12 +1,13 @@
 """Tests for reranker implementations."""
+
 import os
 
 import pytest
 from dotenv import load_dotenv
-
 from llama_index.core.schema import NodeWithScore, TextNode
+
 from src.config import PipelineConfig
-from src.pipeline.reranker import NullReranker, build_reranker
+from src.pipeline.serving.reranker import NullReranker, build_reranker
 
 load_dotenv()
 
@@ -45,7 +46,7 @@ class TestFactoryDispatch:
         config.reranker.enabled = True
         config.reranker.model = "cohere"
         result = build_reranker(config)
-        from src.pipeline.reranker import CohereReranker
+        from src.pipeline.serving.reranker import CohereReranker
 
         assert isinstance(result, CohereReranker)
 
@@ -55,7 +56,7 @@ class TestFactoryDispatch:
         config.reranker.enabled = True
         config.reranker.model = "bge-reranker"
         result = build_reranker(config)
-        from src.pipeline.reranker import CrossEncoderReranker
+        from src.pipeline.serving.reranker import CrossEncoderReranker
 
         assert isinstance(result, CrossEncoderReranker)
 
@@ -65,6 +66,6 @@ class TestFactoryDispatch:
         config.reranker.enabled = True
         config.reranker.model = "cross-encoder"
         result = build_reranker(config)
-        from src.pipeline.reranker import CrossEncoderReranker
+        from src.pipeline.serving.reranker import CrossEncoderReranker
 
         assert isinstance(result, CrossEncoderReranker)

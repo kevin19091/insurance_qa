@@ -1,4 +1,5 @@
 """Tests for query rewriter implementations."""
+
 import os
 
 import pytest
@@ -27,14 +28,14 @@ class TestNullQueryRewriter:
 
 class TestFactoryDispatch:
     def test_disabled_returns_null_rewriter(self) -> None:
-        from src.pipeline.rewriter import NullQueryRewriter
+        from src.pipeline.serving.rewriter import NullQueryRewriter
 
         config = PipelineConfig()
         rewriter = build_rewriter(config)
         assert isinstance(rewriter, NullQueryRewriter)
 
     def test_unknown_strategy_raises(self) -> None:
-        from src.pipeline.generator import OpenAIGenerator
+        from src.pipeline.serving.generator import OpenAIGenerator
 
         config = PipelineConfig.model_construct()
         config.query_rewrite.enabled = True

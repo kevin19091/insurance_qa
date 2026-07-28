@@ -25,7 +25,7 @@ class TestRetriever:
         assert results[0].score is not None
 
     def test_null_retriever_returns_empty(self) -> None:
-        from src.pipeline.retriever import NullRetriever
+        from src.pipeline.serving.retriever import NullRetriever
 
         retriever = NullRetriever()
         results = retriever.retrieve(QueryBundle("anything"))
@@ -35,7 +35,7 @@ class TestRetriever:
         config = PipelineConfig()
         index = build_index(config)
         retriever = build_retriever(index, top_k=0)
-        from src.pipeline.retriever import NullRetriever
+        from src.pipeline.serving.retriever import NullRetriever
 
         assert isinstance(retriever, NullRetriever)
         assert retriever.retrieve(QueryBundle("anything")) == []
@@ -128,7 +128,9 @@ class TestDevModeStream:
 
         with (
             TestClient(app) as client,
-            client.stream("GET", "/api/chat/stream", params={"q": "What is the premium?", "mode": "dev"}) as resp,
+            client.stream(
+                "GET", "/api/chat/stream", params={"q": "What is the premium?", "mode": "dev"}
+            ) as resp,
         ):
             assert resp.status_code == 200
             events: list[dict[str, str]] = []
@@ -188,7 +190,8 @@ class TestDevModeAPI:
         with (
             TestClient(app) as client,
             client.stream(
-                "GET", "/api/chat/stream",
+                "GET",
+                "/api/chat/stream",
                 params={"q": "What is premium?", "mode": "dev", "top_k": "3"},
             ) as resp,
         ):

@@ -1,7 +1,5 @@
 """Query rewriting implementations (Null, HyDE, multi-query, step-back)."""
 
-from typing import Any
-
 from llama_index.core.llms import ChatMessage, MessageRole
 
 from src.pipeline import Generator, QueryRewriter
@@ -28,7 +26,8 @@ def _call_llm(generator: Generator, system_prompt: str, user_message: str) -> st
 
 
 class HyDEQueryRewriter(QueryRewriter):
-    """Hypothetical Document Embedding — generate a hypothetical answer document and use it as the query."""
+    """Hypothetical Document Embedding — generate a hypothetical answer document and use it
+    as the query."""
 
     _PROMPT = (
         "You are an insurance policy expert. "

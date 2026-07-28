@@ -1,4 +1,5 @@
 """Tests for retriever and rewriting-aware retrieval."""
+
 import os
 
 import pytest
@@ -6,8 +7,10 @@ from dotenv import load_dotenv
 from llama_index.core.schema import NodeWithScore, QueryBundle, TextNode
 
 from src.config import PipelineConfig
+from src.pipeline import QueryRewriter as QueryRewriterABC
+from src.pipeline import Retriever as RetrieverABC
 from src.pipeline.factory import build_generator, build_index, build_retriever, build_rewriter
-from src.pipeline.retriever import retrieve_with_rewriting
+from src.pipeline.serving.retriever import retrieve_with_rewriting
 
 load_dotenv()
 _OPENAI_AVAILABLE = bool(os.environ.get("OPENAI_API_KEY"))
@@ -48,13 +51,13 @@ class TestRetrieveWithRewriting:
     def test_single_variant_no_changes(self) -> None:
         node = TextNode(text="Content", id_="x")
         retriever = _FakeRetriever([[NodeWithScore(node=node, score=0.9)]])
-        from src.pipeline.rewriter import NullQueryRewriter
+        from src.pipeline.serving.rewriter import NullQueryRewriter
 
         result = retrieve_with_rewriting(retriever, NullQueryRewriter(), QueryBundle("test"))
         assert len(result) == 1
 
 
-class _FakeRetriever:
+class _FakeRetriever(RetrieverABC):
     def __init__(self, results_per_call: list[list[NodeWithScore]]) -> None:
         self._results = results_per_call
         self.call_count = 0
@@ -65,7 +68,7 @@ class _FakeRetriever:
         return self._results[idx % len(self._results)]
 
 
-class _MultiQueryRewriter:
+class _MultiQueryRewriter(QueryRewriterABC):
     def __init__(self, queries: list[str]) -> None:
         self._queries = queries
 
@@ -75,7 +78,7 @@ class _MultiQueryRewriter:
 
 class TestBM25Retriever:
     def test_returns_top_k_nodes(self) -> None:
-        from src.pipeline.retriever import BM25Retriever
+        from src.pipeline.serving.retriever import BM25Retriever
 
         nodes = [
             TextNode(text="The premium is payable monthly.", id_="a"),
@@ -92,7 +95,7 @@ class TestBM25Retriever:
         assert "d" in returned_ids
 
     def test_returns_empty_for_no_match(self) -> None:
-        from src.pipeline.retriever import BM25Retriever
+        from src.pipeline.serving.retriever import BM25Retriever
 
         nodes = [
             TextNode(text="The premium is payable monthly.", id_="p"),
@@ -106,7 +109,7 @@ class TestBM25Retriever:
         assert len(result) == 0
 
     def test_returns_matching_when_top_k_larger(self) -> None:
-        from src.pipeline.retriever import BM25Retriever
+        from src.pipeline.serving.retriever import BM25Retriever
 
         nodes = [
             TextNode(text="Premium payment terms.", id_="a"),
@@ -122,7 +125,7 @@ class TestBM25Retriever:
 
 class TestHybridRetriever:
     def test_combines_dense_and_sparse_results(self) -> None:
-        from src.pipeline.retriever import HybridRetriever
+        from src.pipeline.serving.retriever import HybridRetriever
 
         nodes = [
             TextNode(text="Premium payment terms.", id_="a"),
@@ -134,32 +137,43 @@ class TestHybridRetriever:
         dense = _FixedScoreRetriever(
             {
                 "test": [
-                    ("b", 0.9), ("d", 0.8), ("a", 0.7),
+                    ("b", 0.9),
+                    ("d", 0.8),
+                    ("a", 0.7),
                 ]
             }
         )
-        from src.pipeline.retriever import BM25Retriever
+        from src.pipeline.serving.retriever import BM25Retriever
+
         sparse = BM25Retriever(nodes=tuple(nodes), top_k=10)
 
-        hybrid = HybridRetriever(dense_retriever=dense, sparse_retriever=sparse, top_k=3, dense_weight=0.7, sparse_weight=0.3)
+        hybrid = HybridRetriever(
+            dense_retriever=dense,
+            sparse_retriever=sparse,
+            top_k=3,
+            dense_weight=0.7,
+            sparse_weight=0.3,
+        )
         result = hybrid.retrieve(QueryBundle("test"))
         assert len(result) <= 3
-        assert all(n.score > 0 for n in result)
+        assert all((n.score or 0) > 0 for n in result)
 
     def test_dense_only_no_sparse_match(self) -> None:
-        from src.pipeline.retriever import HybridRetriever
+        from src.pipeline.serving.retriever import HybridRetriever
 
         dense = _FixedScoreRetriever(
             {
                 "test": [
-                    ("x", 0.9), ("y", 0.8),
+                    ("x", 0.9),
+                    ("y", 0.8),
                 ]
             }
         )
         nodes = [
             TextNode(text="Premium payment terms.", id_="p"),
         ]
-        from src.pipeline.retriever import BM25Retriever
+        from src.pipeline.serving.retriever import BM25Retriever
+
         sparse = BM25Retriever(nodes=tuple(nodes), top_k=5)
         hybrid = HybridRetriever(dense_retriever=dense, sparse_retriever=sparse, top_k=2)
         result = hybrid.retrieve(QueryBundle("test"))
@@ -167,7 +181,7 @@ class TestHybridRetriever:
         assert result[0].node.node_id == "x"
 
 
-class _FixedScoreRetriever:
+class _FixedScoreRetriever(RetrieverABC):
     """Retriever that returns fixed results for given queries."""
 
     def __init__(self, results: dict[str, list[tuple[str, float]]]) -> None:
@@ -184,30 +198,33 @@ class _FixedScoreRetriever:
 class TestBuildRetrieverDispatch:
     def test_dense_mode_returns_index_retriever(self) -> None:
         from src.pipeline.factory import build_retriever
-        from src.pipeline.retriever import IndexRetriever
+        from src.pipeline.serving.retriever import IndexRetriever
 
         config = PipelineConfig(retrieval={"mode": "dense"})  # type: ignore[arg-type]
         from src.pipeline.factory import build_index
+
         index = build_index(PipelineConfig())
         retriever = build_retriever(index, top_k=5, config=config)
         assert isinstance(retriever, IndexRetriever)
 
     def test_sparse_mode_returns_bm25_retriever(self) -> None:
         from src.pipeline.factory import build_retriever
-        from src.pipeline.retriever import BM25Retriever
+        from src.pipeline.serving.retriever import BM25Retriever
 
         config = PipelineConfig(retrieval={"mode": "sparse"})  # type: ignore[arg-type]
         from src.pipeline.factory import build_index
+
         index = build_index(PipelineConfig())
         retriever = build_retriever(index, top_k=5, config=config)
         assert isinstance(retriever, BM25Retriever)
 
     def test_hybrid_mode_returns_hybrid_retriever(self) -> None:
         from src.pipeline.factory import build_retriever
-        from src.pipeline.retriever import HybridRetriever
+        from src.pipeline.serving.retriever import HybridRetriever
 
         config = PipelineConfig(retrieval={"mode": "hybrid"})  # type: ignore[arg-type]
         from src.pipeline.factory import build_index
+
         index = build_index(PipelineConfig())
         retriever = build_retriever(index, top_k=5, config=config)
         assert isinstance(retriever, HybridRetriever)
@@ -215,7 +232,7 @@ class TestBuildRetrieverDispatch:
     @pytest.mark.slow
     def test_reranker_enabled_wraps_with_reranking_retriever(self) -> None:
         from src.pipeline.factory import build_retriever
-        from src.pipeline.retriever import IndexRetriever, RerankingRetriever
+        from src.pipeline.serving.retriever import IndexRetriever, RerankingRetriever
 
         config = PipelineConfig.model_construct()
         config.retrieval.mode = "dense"
@@ -227,8 +244,9 @@ class TestBuildRetrieverDispatch:
         retriever = build_retriever(index, top_k=5, config=config)
         assert isinstance(retriever, RerankingRetriever)
         assert isinstance(retriever._retriever, IndexRetriever)
+
     def test_returns_top_k_nodes(self) -> None:
-        from src.pipeline.retriever import BM25Retriever
+        from src.pipeline.serving.retriever import BM25Retriever
 
         nodes = [
             TextNode(text="The premium is payable monthly.", id_="a"),
@@ -245,7 +263,7 @@ class TestBuildRetrieverDispatch:
         assert "d" in returned_ids
 
     def test_returns_empty_for_no_match(self) -> None:
-        from src.pipeline.retriever import BM25Retriever
+        from src.pipeline.serving.retriever import BM25Retriever
 
         nodes = [
             TextNode(text="The premium is payable monthly.", id_="p"),
@@ -259,7 +277,7 @@ class TestBuildRetrieverDispatch:
         assert len(result) == 0
 
     def test_returns_matching_when_top_k_larger(self) -> None:
-        from src.pipeline.retriever import BM25Retriever
+        from src.pipeline.serving.retriever import BM25Retriever
 
         nodes = [
             TextNode(text="Premium payment terms.", id_="a"),
@@ -284,7 +302,9 @@ class TestRetrieveWithRewritingIntegration:
         rewriter = build_rewriter(config, generator=generator)
 
         direct = retriever.retrieve(QueryBundle("What is the maximum coverage amount?"))
-        rewritten = retrieve_with_rewriting(retriever, rewriter, QueryBundle("What is the maximum coverage amount?"))
+        rewritten = retrieve_with_rewriting(
+            retriever, rewriter, QueryBundle("What is the maximum coverage amount?")
+        )
 
         assert len(direct) > 0
         assert len(rewritten) > 0
