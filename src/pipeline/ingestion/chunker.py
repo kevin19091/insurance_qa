@@ -41,9 +41,7 @@ class SentenceChunker(ChunkerABC):
 
 
 class SemanticChunker(ChunkerABC):
-    def __init__(
-        self, chunk_size: int, chunk_overlap: int, embed_model: Any = None
-    ) -> None:
+    def __init__(self, chunk_size: int, chunk_overlap: int, embed_model: Any = None) -> None:
         if embed_model is None:
             from llama_index.core.embeddings import resolve_embed_model
 
@@ -65,9 +63,7 @@ class SemanticChunker(ChunkerABC):
 
 
 class AgenticChunker(ChunkerABC):
-    def __init__(
-        self, chunk_size: int, chunk_overlap: int, embed_model: Any = None
-    ) -> None:
+    def __init__(self, chunk_size: int, chunk_overlap: int, embed_model: Any = None) -> None:
         if embed_model is None:
             from llama_index.core.embeddings import resolve_embed_model
 

@@ -4,17 +4,17 @@ from pathlib import Path
 from typing import Any, cast
 
 import pytest
-
 from llama_index.core.schema import Document, TextNode
 
 from src.config import PipelineConfig
-from src.pipeline.chunker import (
+from src.pipeline.common.embedder import build_embedder
+from src.pipeline.factory import build_chunker, build_index
+from src.pipeline.ingestion.chunker import (
     AgenticChunker,
     RecursiveChunker,
     SemanticChunker,
     SentenceChunker,
 )
-from src.pipeline.factory import build_chunker, build_embedder, build_index
 
 
 class TestRecursiveChunker:
@@ -79,9 +79,11 @@ class TestBgeEmbedder:
         assert len(result[0].embedding) == config.embedding.dimension
 
 
-class TestFactoryEmbedderDispatch:
+class TestBuildEmbedderDispatch:
+    """build_embedder lives in common/embedder.py — ingestion needs it too, not just serving."""
+
     def test_build_embedder_returns_correct_type(self) -> None:
-        from src.pipeline.embedder import BgeEmbedder, E5Embedder, OpenAIEmbedder
+        from src.pipeline.common.embedder import BgeEmbedder, E5Embedder, OpenAIEmbedder
 
         cases = [
             ("bge-large", BgeEmbedder),
@@ -91,13 +93,11 @@ class TestFactoryEmbedderDispatch:
         for model, expected_cls in cases:
             config = PipelineConfig(embedding={"model": model})  # type: ignore[arg-type]
             embedder = build_embedder(config)
-            assert isinstance(embedder, expected_cls), (
-                f"Expected {expected_cls.__name__} for {model}, got {type(embedder).__name__}"
-            )
+            assert isinstance(
+                embedder, expected_cls
+            ), f"Expected {expected_cls.__name__} for {model}, got {type(embedder).__name__}"
 
     def test_unknown_model_raises(self) -> None:
-        import pytest
-
         config = PipelineConfig()
         config.embedding.model = "unknown-model"  # type: ignore[assignment]
         with pytest.raises(ValueError, match="Unknown embedding model"):

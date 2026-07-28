@@ -60,7 +60,13 @@ class LLMConfig(BaseModel):
 
 
 class StorageConfig(BaseModel):
+    backend: Literal["chroma", "qdrant"] = "chroma"
+    collection_name: str = "insurance_policy"
     chroma_path: str = "data/chroma"
+
+
+class IngestionConfig(BaseModel):
+    source_pdf: str = "data/max-life-group-credit-life-secure-policy-document-v1.pdf"
 
 
 class CacheConfig(BaseModel):
@@ -77,6 +83,7 @@ class PipelineConfig(BaseModel):
     query_rewrite: QueryRewriteConfig = QueryRewriteConfig()
     llm: LLMConfig = LLMConfig()
     storage: StorageConfig = StorageConfig()
+    ingestion: IngestionConfig = IngestionConfig()
     cache: CacheConfig = CacheConfig()
     seed: int = 42
     prompt_version: str = "v1"

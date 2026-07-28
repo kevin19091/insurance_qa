@@ -158,16 +158,20 @@ Each milestone locks all knobs except the one being tested. Results from all pri
 | **M5**    | Query rewriting: no-rewrite vs. HyDE vs. multi-query vs. step-back | Rewriting impact on retrieval         |
 | **M6**    | Sparse retrieval (BM25) vs. dense (BGE) vs. hybrid (dense+sparse)  | Retrieval paradigm                    |
 | **M7**    | Reranker on top-20 (Cohere / BGE-reranker / cross-encoder)         | Reranker impact                       |
-| **M8**    | Top-k sweep (3, 5, 10, 20, 30) with best config                    | Optimal retrieval depth               |
-| **M9**    | Caching: embedding cache + LLM response cache enabled               | Cache impact on latency/cost          |
-| **M10**   | Best config assembled into final RAG pipeline + GPT-4o             | Crown-jewel comparison vs. M0 and M1  |
-| **M11**   | Web chat UI basics (input, response, markdown render, disclaimer)  | Frontend skeleton + safety + E2E      |
-| **M12**   | Chat history persistence (localStorage / backend DB)               | Session management, resume, navigate  |
-| **M13**   | Bookmarked answers (save/unsave Q&A pairs)                         | Persistent bookmarking for revisit    |
-| **M14**   | Starter suggestions + autocomplete suggestions                      | Discovery + input quality             |
-| **M15**   | User feedback (thumbs up/down + reason prompt)                     | Feedback loop for eval improvement    |
-| **M16**   | Streaming responses (SSE token-by-token)                           | Perceived latency, abort mid-stream   |
-| **M17**   | Share & export (copy, shareable link, PDF export)                  | Utility for sharing with family/agent |
+| **M8a**   | Qdrant backend, dense retrieval (vs. M6a)                          | Vector DB backend swap, dense         |
+| **M8b**   | Qdrant backend, native sparse retrieval via `fastembed`/`Qdrant/bm25` (vs. M6b) | Vector DB backend swap, sparse |
+| **M8c**   | Qdrant backend, native hybrid via server-side weighted RRF (vs. M6c) | Vector DB backend swap, hybrid      |
+| **M9**    | Dockerization: ingestion batch job + serving container + Qdrant service | Deployable, reproducible pipeline |
+| **M10**   | Top-k sweep (3, 5, 10, 20, 30) with best config                    | Optimal retrieval depth               |
+| **M11**   | Caching: embedding cache + LLM response cache enabled               | Cache impact on latency/cost          |
+| **M12**   | Best config assembled into final RAG pipeline + GPT-4o             | Crown-jewel comparison vs. M0 and M1  |
+| **M13**   | Web chat UI basics (input, response, markdown render, disclaimer)  | Frontend skeleton + safety + E2E      |
+| **M14**   | Chat history persistence (localStorage / backend DB)               | Session management, resume, navigate  |
+| **M15**   | Bookmarked answers (save/unsave Q&A pairs)                         | Persistent bookmarking for revisit    |
+| **M16**   | Starter suggestions + autocomplete suggestions                      | Discovery + input quality             |
+| **M17**   | User feedback (thumbs up/down + reason prompt)                     | Feedback loop for eval improvement    |
+| **M18**   | Streaming responses (SSE token-by-token)                           | Perceived latency, abort mid-stream   |
+| **M19**   | Share & export (copy, shareable link, PDF export)                  | Utility for sharing with family/agent |
 
 ### Milestone Artifacts
 Each milestone directory (`benchmarks/Mx/`) contains:

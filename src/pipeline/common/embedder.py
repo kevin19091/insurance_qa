@@ -1,9 +1,17 @@
-"""Embedding model implementations."""
+"""Embedding model implementations.
+
+build_embedder() lives here (not in a factory module) because it's a shared
+dependency of both ingestion (embed chunks at write time) and serving (embed
+the query at retrieve time).
+"""
 
 from llama_index.core.schema import TextNode
 
+from src.config import PipelineConfig
 from src.observability import observe
 from src.pipeline import Embedder as EmbedderABC
+
+_BGE_MODEL = "BAAI/bge-large-en-v1.5"
 
 
 class BgeEmbedder(EmbedderABC):
@@ -98,4 +106,21 @@ class E5Embedder(EmbedderABC):
         return nodes
 
 
-__all__ = ["BgeEmbedder", "CohereEmbedder", "E5Embedder", "OpenAIEmbedder"]
+def build_embedder(config: PipelineConfig) -> EmbedderABC:
+    model = config.embedding.model
+    dimension = config.embedding.dimension
+
+    if model == "bge-large":
+        return BgeEmbedder(model_name=_BGE_MODEL, dimension=dimension)
+    if model == "text-embedding-3-small":
+        return OpenAIEmbedder(model_name=model, dimension=dimension)
+    if model == "cohere-embed-v3":
+        return CohereEmbedder(model_name=model, dimension=dimension)
+    if model == "e5-large":
+        return E5Embedder(model_name=model, dimension=dimension)
+
+    msg = f"Unknown embedding model: {model}"
+    raise ValueError(msg)
+
+
+__all__ = ["BgeEmbedder", "CohereEmbedder", "E5Embedder", "OpenAIEmbedder", "build_embedder"]

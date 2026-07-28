@@ -9,6 +9,7 @@ from src.config import (
     CacheConfig,
     ChunkConfig,
     EmbeddingConfig,
+    IngestionConfig,
     LLMConfig,
     PipelineConfig,
     QueryRewriteConfig,
@@ -30,6 +31,7 @@ class TestPipelineConfig:
         assert config.query_rewrite == QueryRewriteConfig()
         assert config.llm == LLMConfig()
         assert config.storage == StorageConfig()
+        assert config.ingestion == IngestionConfig()
         assert config.cache == CacheConfig()
         assert config.seed == 42
         assert config.prompt_version == "v1"
@@ -58,11 +60,37 @@ class TestStorageConfig:
     def test_default_path(self) -> None:
         assert StorageConfig().chroma_path == "data/chroma"
 
+    def test_defaults_to_chroma_backend(self) -> None:
+        assert StorageConfig().backend == "chroma"
+
+    def test_default_collection_name(self) -> None:
+        assert StorageConfig().collection_name == "insurance_policy"
+
+    def test_accepts_qdrant_backend(self) -> None:
+        config = StorageConfig(backend="qdrant")
+        assert config.backend == "qdrant"
+
+    def test_rejects_unknown_backend(self) -> None:
+        with pytest.raises(ValidationError):
+            StorageConfig(backend="invalid-backend")  # type: ignore[arg-type]
+
     def test_configured_in_pipeline_config(self) -> None:
         config = PipelineConfig()
         assert config.storage.chroma_path == "data/chroma"
         config2 = PipelineConfig(storage={"chroma_path": "/tmp/test-chroma"})  # type: ignore[arg-type]
         assert config2.storage.chroma_path == "/tmp/test-chroma"
+
+
+class TestIngestionConfig:
+    def test_default_source_pdf_is_max_life_policy(self) -> None:
+        assert (
+            IngestionConfig().source_pdf
+            == "data/max-life-group-credit-life-secure-policy-document-v1.pdf"
+        )
+
+    def test_configured_in_pipeline_config(self) -> None:
+        config = PipelineConfig()
+        assert config.ingestion.source_pdf == IngestionConfig().source_pdf
 
 
 class TestFactory:
@@ -76,13 +104,13 @@ class TestFactory:
         assert "Max Life" in result[0].text
 
     def test_build_chunker_returns_correct_type_by_strategy(self) -> None:
-        from src.pipeline.chunker import (
+        from src.pipeline.factory import build_chunker
+        from src.pipeline.ingestion.chunker import (
             AgenticChunker,
             RecursiveChunker,
             SemanticChunker,
             SentenceChunker,
         )
-        from src.pipeline.factory import build_chunker
 
         cases = [
             ("recursive", RecursiveChunker),

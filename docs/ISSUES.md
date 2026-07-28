@@ -47,6 +47,13 @@ Each issue is a thin, demonstrable end-to-end slice. Work sequentially — each 
 | 41 | Frontend: pipeline visualization component | AFK | #40 | React component showing step-by-step pipeline: each step name, status (pending/running/done), duration bar, cost badge. Updates in real-time via SSE events. Reuses existing streaming infrastructure. |
 | 42 | Frontend: strategy override controls | AFK | #41 | Dropdowns for overridable strategies (retrieval mode, rewrite, reranker, top-k, LLM). Read-only info for fixed strategies (chunk strategy, embedding model). Strategy availability fetched from `/api/strategies`. |
 | 43 | Frontend: dev mode toggle + RAGAS scores | AFK | #42 | Toggle switch in UI to enable/disable developer mode. When on, shows pipeline visualization + controls + RAGAS scores at end of response. When off, current simple UI (input → answer). |
+| 44 | `pyproject.toml` ingest/serve dependency extras | AFK | #45, #46 | Move `fastapi`/`uvicorn`/`sse-starlette`/`pymupdf` into `[ingest]`/`[serve]` optional-dependency extras. Add `qdrant-client`, `llama-index-vector-stores-qdrant`, `fastembed` to base deps. `pip install -e ".[ingest]"` and `".[serve]"` each pull only what they need. |
+| 45 | `Dockerfile.ingest` + `.dockerignore` | AFK | #47 | Bakes embedding + sparse models via `python -m src.download_models --embeddings-only`, bind-mounts `data/` at runtime, `CMD python -m src.ingest`. Builds and runs to completion (exit 0) against a running Qdrant. |
+| 46 | `Dockerfile.serve` (multi-stage: Node build + Python runtime) | AFK | #47 | Bakes embedding + both reranker models, builds the React frontend (`node:20-alpine` stage → `frontend/build`), serves via `uvicorn`. Builds and answers `/api/health`. |
+| 47 | `docker-compose.yaml` — 3-service local orchestration | AFK | #48 | `qdrant` (pinned `qdrant/qdrant` image ≥v1.17.0, named volume) → `ingest` (bind-mounted `data/`, `depends_on` qdrant) → `serve` (`depends_on: service_completed_successfully`). `docker compose up` end-to-end: ingest populates the correct Max Life policy PDF's content, serve answers a real question citing it. `python -m src.run M1 --rebuild` still passes unmodified (Chroma regression check). |
+| 48 | Document Railway deployment mapping in `docs/infra.md` | AFK | — | `qdrant` = standing service + Volume (persistent, no replicas with volumes); `ingest` = Cron Job (same image as #45, scheduled instead of always-on); `serve` = standing service (#46). Notes the build-time-bake vs. startup-time-load-once distinction for models. |
+| 49 | Execute M10 top-k sweep | AFK | #50 | 5 benchmark runs, `retrieval.top_k` in [3, 5, 10, 20, 30], base config = current best-known milestone, via existing `--override` flag (#13). Saved to `benchmarks/M10{a,b,c,d,e}/`. |
+| 50 | M10 comparison report | HITL | — | Aggregate 5 results; analyze faithfulness/cost/latency vs. top-k depth; recommend optimal depth. |
 
 ## Dependency Graph
 
@@ -77,12 +84,19 @@ Each issue is a thin, demonstrable end-to-end slice. Work sequentially — each 
 11 ──→ 39 ──→ 40 ──→ 41
                │
                42 ──→ 43
+
+        ┌──→ 45 ──┐
+44 ──────┤          ├──→ 47 ──→ 48
+        └──→ 46 ──┘
+
+13 ──→ 49 ──→ 50
 ```
 
 ## Post-M1 Milestones
 
-To be broken into issues after M1 lands:
-- M8: Top-k sweep
-- M9: Caching
-- M10: Best config + GPT-4o
-- M11–M17: UX milestones
+- M8a/M8b/M8c: Qdrant backend (dense/sparse/hybrid, vs. M6a/b/c) — implemented directly, not issued (grilled design, see conversation history for the decision tree: native sparse/hybrid via `fastembed`, server-side weighted RRF via `RrfQuery`, `src/pipeline/common|ingestion|serving` folder split)
+- M9: Dockerization — issues #44–48 above
+- M10: Top-k sweep — issues #49–50 above
+- M11: Caching
+- M12: Best config + GPT-4o
+- M13–M19: UX milestones (to be broken into issues after M12 lands)

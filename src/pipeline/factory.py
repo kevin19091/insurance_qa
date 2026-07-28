@@ -4,18 +4,24 @@ Each method returns an instance of the corresponding interface.
 Swapping strategies = changing the config → factory returns a different implementation.
 """
 
-from typing import Any
+from typing import Any, cast
 
 import chromadb
 from llama_index.core import StorageContext, VectorStoreIndex
+from llama_index.core.embeddings import BaseEmbedding
 from llama_index.vector_stores.chroma import ChromaVectorStore
 
 from src.config import PipelineConfig
-from src.pipeline import Chunker, Embedder, Generator, Parser, QueryRewriter, Retriever
-from src.pipeline.chunker import AgenticChunker, RecursiveChunker, SemanticChunker, SentenceChunker
-from src.pipeline.embedder import BgeEmbedder, CohereEmbedder, E5Embedder, OpenAIEmbedder
+from src.pipeline import Chunker, Generator, Parser, QueryRewriter, Retriever
+from src.pipeline.common.embedder import build_embedder
 from src.pipeline.generator import ClaudeGenerator, GeminiGenerator, OpenAIGenerator
-from src.pipeline.parser import PyMuPDFParser
+from src.pipeline.ingestion.chunker import (
+    AgenticChunker,
+    RecursiveChunker,
+    SemanticChunker,
+    SentenceChunker,
+)
+from src.pipeline.ingestion.parser import PyMuPDFParser
 from src.pipeline.retriever import (
     BM25Retriever,
     HybridRetriever,
@@ -30,9 +36,6 @@ from src.pipeline.rewriter import (
     NullQueryRewriter,
     StepBackRewriter,
 )
-
-# BGE-large-en-v1.5 (1024-dim, English)
-_BGE_MODEL = "BAAI/bge-large-en-v1.5"
 
 
 def build_parser(config: PipelineConfig) -> Parser:
@@ -56,23 +59,6 @@ def build_chunker(config: PipelineConfig, embed_model: Any | None = None) -> Chu
     raise ValueError(msg)
 
 
-def build_embedder(config: PipelineConfig) -> Embedder:
-    model = config.embedding.model
-    dimension = config.embedding.dimension
-
-    if model == "bge-large":
-        return BgeEmbedder(model_name=_BGE_MODEL, dimension=dimension)
-    if model == "text-embedding-3-small":
-        return OpenAIEmbedder(model_name=model, dimension=dimension)
-    if model == "cohere-embed-v3":
-        return CohereEmbedder(model_name=model, dimension=dimension)
-    if model == "e5-large":
-        return E5Embedder(model_name=model, dimension=dimension)
-
-    msg = f"Unknown embedding model: {model}"
-    raise ValueError(msg)
-
-
 def build_index(config: PipelineConfig, force_rebuild: bool = False) -> VectorStoreIndex:
     collection_name = "insurance_policy"
 
@@ -86,7 +72,7 @@ def build_index(config: PipelineConfig, force_rebuild: bool = False) -> VectorSt
             chroma_client.delete_collection(collection_name)
 
         embedder = build_embedder(config)
-        raw_embed_model = embedder.raw_model
+        raw_embed_model = cast(BaseEmbedding, embedder.raw_model)
 
         parser = build_parser(config)
         chunker = build_chunker(config, embed_model=raw_embed_model)
@@ -109,7 +95,7 @@ def build_index(config: PipelineConfig, force_rebuild: bool = False) -> VectorSt
     embedder = build_embedder(config)
     return VectorStoreIndex.from_vector_store(
         vector_store=vector_store,
-        embed_model=embedder.raw_model,
+        embed_model=cast(BaseEmbedding, embedder.raw_model),
     )
 
 
