@@ -14,7 +14,12 @@ from llama_index.vector_stores.chroma import ChromaVectorStore
 from src.config import PipelineConfig
 from src.pipeline.common.embedder import build_embedder
 from src.pipeline.ingestion.pipeline import build_chunker, build_parser
-from src.pipeline.serving.factory import build_generator, build_retriever, build_rewriter
+from src.pipeline.serving.factory import (
+    build_generator,
+    build_retriever,
+    build_rewriter,
+    load_index,
+)
 
 
 def build_index(config: PipelineConfig, force_rebuild: bool = False) -> VectorStoreIndex:
@@ -65,4 +70,5 @@ __all__ = [
     "build_parser",
     "build_retriever",
     "build_rewriter",
+    "load_index",
 ]

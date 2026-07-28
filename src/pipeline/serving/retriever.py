@@ -1,15 +1,19 @@
 """Retrieval strategy implementations and rewriting-aware retrieval."""
 
-from typing import cast
+from typing import Any, cast
 
 from llama_index.core import VectorStoreIndex
+from llama_index.core.embeddings import BaseEmbedding
 from llama_index.core.schema import NodeWithScore, QueryBundle, TextNode
 from llama_index.vector_stores.chroma import ChromaVectorStore
+from llama_index.vector_stores.qdrant import QdrantVectorStore
+from qdrant_client.models import Prefetch, Rrf, RrfQuery
 from rank_bm25 import BM25Okapi
 
 from src.observability import observe
 from src.pipeline import QueryRewriter, Reranker
 from src.pipeline import Retriever as RetrieverABC
+from src.pipeline.common.sparse_embedder import embed_query
 
 
 def _tokenize(text: str) -> list[str]:
@@ -61,6 +65,112 @@ class BM25Retriever(RetrieverABC):
             return []
         max_score = max(s for _, s in top if s > 0)
         return [NodeWithScore(node=self._nodes[i], score=float(s) / max_score) for i, s in top]
+
+
+class QdrantNativeRetriever(RetrieverABC):
+    """Dense/sparse/hybrid retrieval via Qdrant's own Query API.
+
+    Deliberately bypasses QdrantVectorStore.query()'s built-in HYBRID mode —
+    that fuses dense+sparse client-side via an alpha-weighted blend. This
+    uses Qdrant's server-side weighted RRF (RrfQuery, requires Qdrant
+    server >=v1.17.0) so fusion happens on the server and dense_weight/
+    sparse_weight carry the same meaning they have for the Chroma+BM25
+    HybridRetriever above.
+    """
+
+    def __init__(
+        self,
+        index: VectorStoreIndex,
+        embed_model: BaseEmbedding,
+        mode: str,
+        top_k: int,
+        dense_weight: float = 0.7,
+        sparse_weight: float = 0.3,
+    ) -> None:
+        self._vector_store = cast(QdrantVectorStore, index.vector_store)
+        self._client = self._vector_store.client
+        self._collection_name = self._vector_store.collection_name
+        self._dense_vector_name = self._vector_store.dense_vector_name
+        self._sparse_vector_name = self._vector_store.sparse_vector_name
+        self._embed_model = embed_model
+        self._mode = mode
+        self._top_k = top_k
+        self._dense_weight = dense_weight
+        self._sparse_weight = sparse_weight
+
+    @observe(as_type="retriever")
+    def retrieve(self, query: QueryBundle) -> list[NodeWithScore]:
+        if self._mode == "dense":
+            points = self._query_dense(query.query_str)
+        elif self._mode == "sparse":
+            points = self._query_sparse(query.query_str)
+        elif self._mode == "hybrid":
+            points = self._query_hybrid(query.query_str)
+        else:
+            msg = f"Unknown retrieval mode: {self._mode}"
+            raise ValueError(msg)
+        return self._points_to_nodes(points)
+
+    def _query_dense(self, query_text: str) -> list[Any]:
+        vector = self._embed_model.get_query_embedding(query_text)
+        response = self._client.query_points(
+            collection_name=self._collection_name,
+            query=vector,
+            using=self._dense_vector_name,
+            limit=self._top_k,
+            with_payload=True,
+        )
+        return cast(list[Any], response.points)
+
+    def _query_sparse(self, query_text: str) -> list[Any]:
+        sparse_vector = embed_query(query_text)
+        response = self._client.query_points(
+            collection_name=self._collection_name,
+            query=sparse_vector,
+            using=self._sparse_vector_name,
+            limit=self._top_k,
+            with_payload=True,
+        )
+        return cast(list[Any], response.points)
+
+    def _query_hybrid(self, query_text: str) -> list[Any]:
+        dense_vector = self._embed_model.get_query_embedding(query_text)
+        sparse_vector = embed_query(query_text)
+        response = self._client.query_points(
+            collection_name=self._collection_name,
+            prefetch=[
+                Prefetch(query=dense_vector, using=self._dense_vector_name, limit=self._top_k),
+                Prefetch(query=sparse_vector, using=self._sparse_vector_name, limit=self._top_k),
+            ],
+            query=RrfQuery(rrf=Rrf(weights=[self._dense_weight, self._sparse_weight])),
+            limit=self._top_k,
+            with_payload=True,
+        )
+        return cast(list[Any], response.points)
+
+    def _points_to_nodes(self, points: list[Any]) -> list[NodeWithScore]:
+        result = self._vector_store.parse_to_query_result(points)
+        return [
+            NodeWithScore(node=node, score=score)
+            for node, score in zip(result.nodes or [], result.similarities or [], strict=True)
+        ]
+
+
+class SimilarityThresholdRetriever(RetrieverABC):
+    """Drops nodes below a similarity-score floor.
+
+    Only meaningful for dense-mode scores (a genuine 0-1 cosine similarity)
+    — sparse and hybrid-fused scores aren't on a comparable scale, so this
+    should only ever wrap a dense retriever, never sparse/hybrid.
+    """
+
+    def __init__(self, retriever: RetrieverABC, threshold: float) -> None:
+        self._retriever = retriever
+        self._threshold = threshold
+
+    def retrieve(self, query: QueryBundle) -> list[NodeWithScore]:
+        nodes = self._retriever.retrieve(query)
+        return [n for n in nodes if (n.score or 0) >= self._threshold]
 
 
 class NullRetriever(RetrieverABC):

@@ -19,7 +19,9 @@ from src.pipeline.serving.retriever import (
     HybridRetriever,
     IndexRetriever,
     NullRetriever,
+    QdrantNativeRetriever,
     RerankingRetriever,
+    SimilarityThresholdRetriever,
     extract_nodes_from_index,
 )
 from src.pipeline.serving.rewriter import (
@@ -78,7 +80,20 @@ def build_retriever(
 
     mode = config.retrieval.mode
     inner: Retriever
-    if mode == "dense":
+    if config.storage.backend == "qdrant":
+        if mode not in ("dense", "sparse", "hybrid"):
+            msg = f"Unknown retrieval mode: {mode}"
+            raise ValueError(msg)
+        embedder = build_embedder(config)
+        inner = QdrantNativeRetriever(
+            index=index,
+            embed_model=cast(BaseEmbedding, embedder.raw_model),
+            mode=mode,
+            top_k=effective_top_k,
+            dense_weight=config.retrieval.dense_weight,
+            sparse_weight=config.retrieval.sparse_weight,
+        )
+    elif mode == "dense":
         inner = IndexRetriever(index=index, top_k=effective_top_k)
     elif mode == "sparse":
         nodes = extract_nodes_from_index(index)
@@ -97,6 +112,9 @@ def build_retriever(
     else:
         msg = f"Unknown retrieval mode: {mode}"
         raise ValueError(msg)
+
+    if mode == "dense" and config.retrieval.similarity_threshold is not None:
+        inner = SimilarityThresholdRetriever(inner, threshold=config.retrieval.similarity_threshold)
 
     if config.reranker.enabled:
         from src.pipeline.serving.reranker import build_reranker

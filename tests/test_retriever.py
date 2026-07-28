@@ -1,9 +1,11 @@
 """Tests for retriever and rewriting-aware retrieval."""
 
 import os
+from collections.abc import Generator
 
 import pytest
 from dotenv import load_dotenv
+from llama_index.core import VectorStoreIndex
 from llama_index.core.schema import NodeWithScore, QueryBundle, TextNode
 
 from src.config import PipelineConfig
@@ -11,6 +13,7 @@ from src.pipeline import QueryRewriter as QueryRewriterABC
 from src.pipeline import Retriever as RetrieverABC
 from src.pipeline.factory import build_generator, build_index, build_retriever, build_rewriter
 from src.pipeline.serving.retriever import retrieve_with_rewriting
+from tests.conftest import requires_qdrant
 
 load_dotenv()
 _OPENAI_AVAILABLE = bool(os.environ.get("OPENAI_API_KEY"))
@@ -66,6 +69,39 @@ class _FakeRetriever(RetrieverABC):
         idx = self.call_count
         self.call_count += 1
         return self._results[idx % len(self._results)]
+
+
+class TestSimilarityThresholdRetriever:
+    def test_drops_nodes_below_threshold(self) -> None:
+        from src.pipeline.serving.retriever import SimilarityThresholdRetriever
+
+        nodes = [
+            NodeWithScore(node=TextNode(text="a", id_="a"), score=0.9),
+            NodeWithScore(node=TextNode(text="b", id_="b"), score=0.1),
+            NodeWithScore(node=TextNode(text="c", id_="c"), score=0.5),
+        ]
+        retriever = SimilarityThresholdRetriever(_FakeRetriever([nodes]), threshold=0.2)
+        result = retriever.retrieve(QueryBundle("test"))
+        assert {n.node.node_id for n in result} == {"a", "c"}
+
+    def test_keeps_all_when_none_below_threshold(self) -> None:
+        from src.pipeline.serving.retriever import SimilarityThresholdRetriever
+
+        nodes = [
+            NodeWithScore(node=TextNode(text="a", id_="a"), score=0.9),
+            NodeWithScore(node=TextNode(text="b", id_="b"), score=0.8),
+        ]
+        retriever = SimilarityThresholdRetriever(_FakeRetriever([nodes]), threshold=0.2)
+        result = retriever.retrieve(QueryBundle("test"))
+        assert len(result) == 2
+
+    def test_none_score_treated_as_zero(self) -> None:
+        from src.pipeline.serving.retriever import SimilarityThresholdRetriever
+
+        nodes = [NodeWithScore(node=TextNode(text="a", id_="a"), score=None)]
+        retriever = SimilarityThresholdRetriever(_FakeRetriever([nodes]), threshold=0.2)
+        result = retriever.retrieve(QueryBundle("test"))
+        assert result == []
 
 
 class _MultiQueryRewriter(QueryRewriterABC):
@@ -289,6 +325,110 @@ class TestBuildRetrieverDispatch:
         retriever = BM25Retriever(nodes=tuple(nodes), top_k=100)
         result = retriever.retrieve(QueryBundle("coverage cardiac hospitalisation"))
         assert len(result) >= 2
+
+
+@requires_qdrant
+@pytest.mark.slow
+class TestBuildRetrieverDispatchQdrant:
+    _COLLECTION = "test_build_retriever_dispatch_qdrant"
+
+    @pytest.fixture(scope="class", autouse=True)
+    def _ingested(self) -> Generator[None, None, None]:
+        from qdrant_client import QdrantClient
+
+        from src.pipeline.ingestion.pipeline import run_ingestion
+
+        config = PipelineConfig(storage={"backend": "qdrant", "collection_name": self._COLLECTION})  # type: ignore[arg-type]
+        run_ingestion(config)
+        yield
+        client = QdrantClient(url="http://localhost:6333")
+        if client.collection_exists(self._COLLECTION):
+            client.delete_collection(self._COLLECTION)
+
+    def _load_index(self) -> VectorStoreIndex:
+        from src.pipeline.factory import load_index
+
+        config = PipelineConfig(storage={"backend": "qdrant", "collection_name": self._COLLECTION})  # type: ignore[arg-type]
+        return load_index(config)
+
+    def test_dense_mode_returns_qdrant_native_retriever(self) -> None:
+        from src.pipeline.factory import build_retriever
+        from src.pipeline.serving.retriever import QdrantNativeRetriever
+
+        config = PipelineConfig(
+            storage={"backend": "qdrant", "collection_name": self._COLLECTION},  # type: ignore[arg-type]
+            retrieval={"mode": "dense"},  # type: ignore[arg-type]
+        )
+        retriever = build_retriever(self._load_index(), top_k=5, config=config)
+        assert isinstance(retriever, QdrantNativeRetriever)
+        assert retriever._mode == "dense"
+
+    def test_sparse_mode_returns_qdrant_native_retriever(self) -> None:
+        from src.pipeline.factory import build_retriever
+        from src.pipeline.serving.retriever import QdrantNativeRetriever
+
+        config = PipelineConfig(
+            storage={"backend": "qdrant", "collection_name": self._COLLECTION},  # type: ignore[arg-type]
+            retrieval={"mode": "sparse"},  # type: ignore[arg-type]
+        )
+        retriever = build_retriever(self._load_index(), top_k=5, config=config)
+        assert isinstance(retriever, QdrantNativeRetriever)
+        assert retriever._mode == "sparse"
+
+    def test_hybrid_mode_returns_qdrant_native_retriever(self) -> None:
+        from src.pipeline.factory import build_retriever
+        from src.pipeline.serving.retriever import QdrantNativeRetriever
+
+        config = PipelineConfig(
+            storage={"backend": "qdrant", "collection_name": self._COLLECTION},  # type: ignore[arg-type]
+            retrieval={"mode": "hybrid"},  # type: ignore[arg-type]
+        )
+        retriever = build_retriever(self._load_index(), top_k=5, config=config)
+        assert isinstance(retriever, QdrantNativeRetriever)
+        assert retriever._mode == "hybrid"
+
+    def test_similarity_threshold_wraps_dense_qdrant_retriever(self) -> None:
+        from src.pipeline.factory import build_retriever
+        from src.pipeline.serving.retriever import SimilarityThresholdRetriever
+
+        config = PipelineConfig(
+            storage={"backend": "qdrant", "collection_name": self._COLLECTION},  # type: ignore[arg-type]
+            retrieval={"mode": "dense", "similarity_threshold": 0.2},  # type: ignore[arg-type]
+        )
+        retriever = build_retriever(self._load_index(), top_k=5, config=config)
+        assert isinstance(retriever, SimilarityThresholdRetriever)
+
+
+class TestBuildRetrieverSimilarityThresholdDispatch:
+    def test_dense_mode_with_threshold_wraps_chroma_retriever(self) -> None:
+        from src.pipeline.factory import build_index, build_retriever
+        from src.pipeline.serving.retriever import SimilarityThresholdRetriever
+
+        config = PipelineConfig(retrieval={"mode": "dense", "similarity_threshold": 0.2})  # type: ignore[arg-type]
+        index = build_index(PipelineConfig())
+        retriever = build_retriever(index, top_k=5, config=config)
+        assert isinstance(retriever, SimilarityThresholdRetriever)
+
+    def test_no_threshold_does_not_wrap(self) -> None:
+        from src.pipeline.factory import build_index, build_retriever
+        from src.pipeline.serving.retriever import IndexRetriever, SimilarityThresholdRetriever
+
+        config = PipelineConfig(retrieval={"mode": "dense"})  # type: ignore[arg-type]
+        index = build_index(PipelineConfig())
+        retriever = build_retriever(index, top_k=5, config=config)
+        assert not isinstance(retriever, SimilarityThresholdRetriever)
+        assert isinstance(retriever, IndexRetriever)
+
+    def test_sparse_mode_with_threshold_not_wrapped(self) -> None:
+        """similarity_threshold is dense-only — BM25 scores aren't a comparable 0-1 scale."""
+        from src.pipeline.factory import build_index, build_retriever
+        from src.pipeline.serving.retriever import BM25Retriever, SimilarityThresholdRetriever
+
+        config = PipelineConfig(retrieval={"mode": "sparse", "similarity_threshold": 0.2})  # type: ignore[arg-type]
+        index = build_index(PipelineConfig())
+        retriever = build_retriever(index, top_k=5, config=config)
+        assert not isinstance(retriever, SimilarityThresholdRetriever)
+        assert isinstance(retriever, BM25Retriever)
 
 
 @pytest.mark.slow
