@@ -64,23 +64,40 @@ class CrossEncoderReranker(Reranker):
         return [NodeWithScore(node=nodes[i].node, score=float(s) / max_score) for i, s in top]
 
 
+_reranker_cache: dict[str, Reranker] = {}
+
+
 def build_reranker(config: Any) -> Reranker:
-    """Build a Reranker from config. Returns a NullReranker when disabled."""
+    """Build a Reranker from config. Returns a NullReranker when disabled.
+
+    Non-null rerankers are cached by model name and reused for the process
+    lifetime — constructing a CrossEncoder (model load) or Cohere client is
+    expensive, and was previously happening on every single request. Caching
+    by model name alone is safe because top_n is already a call-time
+    override on rerank(), independent of the constructor default.
+    """
     if not config.reranker.enabled:
         return NullReranker()
 
     model = config.reranker.model
     top_n = config.reranker.top_n
 
-    if model == "cohere":
-        return CohereReranker(top_n=top_n)
-    if model == "bge-reranker":
-        return CrossEncoderReranker(model_name="BAAI/bge-reranker-large", top_n=top_n)
-    if model == "cross-encoder":
-        return CrossEncoderReranker(model_name="cross-encoder/ms-marco-MiniLM-L-6-v2", top_n=top_n)
+    if model not in _reranker_cache:
+        if model == "cohere":
+            _reranker_cache[model] = CohereReranker(top_n=top_n)
+        elif model == "bge-reranker":
+            _reranker_cache[model] = CrossEncoderReranker(
+                model_name="BAAI/bge-reranker-large", top_n=top_n
+            )
+        elif model == "cross-encoder":
+            _reranker_cache[model] = CrossEncoderReranker(
+                model_name="cross-encoder/ms-marco-MiniLM-L-6-v2", top_n=top_n
+            )
+        else:
+            msg = f"Unknown reranker model: {model}"
+            raise ValueError(msg)
 
-    msg = f"Unknown reranker model: {model}"
-    raise ValueError(msg)
+    return _reranker_cache[model]
 
 
 __all__ = ["CohereReranker", "CrossEncoderReranker", "NullReranker", "Reranker", "build_reranker"]

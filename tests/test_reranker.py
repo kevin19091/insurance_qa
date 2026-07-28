@@ -69,3 +69,37 @@ class TestFactoryDispatch:
         from src.pipeline.serving.reranker import CrossEncoderReranker
 
         assert isinstance(result, CrossEncoderReranker)
+
+
+class TestRerankerCaching:
+    """build_reranker must not reconstruct the underlying model per call —
+    CrossEncoder/Cohere-client construction is expensive and was previously
+    happening on every single request."""
+
+    @pytest.mark.slow
+    def test_same_model_returns_cached_instance(self) -> None:
+        config = PipelineConfig.model_construct()
+        config.reranker.enabled = True
+        config.reranker.model = "cross-encoder"
+
+        first = build_reranker(config)
+        second = build_reranker(config)
+        assert first is second
+
+    @pytest.mark.slow
+    def test_top_n_override_still_works_on_cached_instance(self) -> None:
+        """Caching by model name must not freeze top_n — rerank() already
+        takes top_n as a call-time override independent of the constructor."""
+        config = PipelineConfig.model_construct()
+        config.reranker.enabled = True
+        config.reranker.model = "cross-encoder"
+        config.reranker.top_n = 5
+
+        reranker = build_reranker(config)
+        nodes = [
+            NodeWithScore(node=TextNode(text="cardiac surgery coverage"), score=0.9),
+            NodeWithScore(node=TextNode(text="premium payment terms"), score=0.8),
+            NodeWithScore(node=TextNode(text="hospitalisation expenses"), score=0.7),
+        ]
+        result = reranker.rerank("cardiac surgery", nodes, top_n=2)
+        assert len(result) == 2
